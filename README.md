@@ -1,7 +1,5 @@
 
-<p align="center">
-  <img src="a_high_detail_infographic_readme_style_project_p.png" alt="Property Hub AI Banner" width="100%">
-</p>
+
 
 # 🏠 Property Hub AI
 
