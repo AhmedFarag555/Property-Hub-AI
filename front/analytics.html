@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Analytics – PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="image/logo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ── Skeleton ── */
+    .skeleton {
+      background: linear-gradient(90deg, #f0eeec 25%, #e5e3e0 50%, #f0eeec 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+      color: transparent !important;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ── Chart grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .charts-grid .full-width { grid-column: 1 / -1; }
+    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+
+    .chart-wrapper {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+    }
+    .chart-wrapper h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; font-weight: 700;
+      color: var(--dark); margin-bottom: 4px;
+    }
+    .chart-wrapper p {
+      font-size: 0.82rem; color: var(--mid); margin-bottom: 20px;
+    }
+    canvas { max-height: 280px; }
+
+    /* ── Stat cards ── */
+    .stat-card h2.skeleton { height: 38px; width: 80px; display: block; margin-bottom: 6px; }
+    .stat-card p.skeleton  { height: 14px; width: 110px; display: block; }
+
+    /* ── Price range table ── */
+    .range-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .range-row:last-child { border-bottom: none; }
+    .range-label { flex: 2; font-size: 0.85rem; color: var(--dark-2); font-weight: 500; }
+    .range-bar-wrap { flex: 3; height: 8px; background: #f0eeec; border-radius: 4px; overflow: hidden; }
+    .range-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+    .range-count { font-size: 0.8rem; color: var(--mid); min-width: 28px; text-align: right; }
+
+    /* ── Insight pills ── */
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .insight-pill {
+      background: var(--white); border-radius: 12px;
+      padding: 18px 20px; border: 1px solid var(--border);
+      box-shadow: var(--card-shadow);
+    }
+    .insight-pill .label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--mid); margin-bottom: 6px; }
+    .insight-pill .value { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; color: var(--dark); }
+    .insight-pill .sub   { font-size: 0.8rem; color: var(--mid); margin-top: 2px; }
+
+    /* ── Error ── */
+    .error-banner {
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: var(--radius); padding: 20px 24px;
+      color: #991b1b; font-size: 0.9rem; margin-bottom: 20px;
+      display: none;
+    }
+    .error-banner.show { display: flex; align-items: center; gap: 10px; }
+
+    /* ── Chart loading overlay ── */
+    .chart-loading {
+      height: 220px; background: #f5f4f2;
+      border-radius: 10px; display: flex;
+      align-items: center; justify-content: center;
+      color: var(--mid); font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="login.html" class="navbar-brand">PROPERTY<span>HUB</span></a>
+  <div class="navbar-links">
+    <a href="buy.html">Properties</a>
+    <a href="Manage Properties.html">Manage Properties</a>
+    <a href="analytics.html" class="active">Analytics</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="login.html" class="btn-outline">Logout</a>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">PROPERTY<span>HUB</span><br><small style="font-weight:300;font-size:0.7rem;opacity:0.6">Admin Panel</small></div>
+    <a href="dashboard.html">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="analytics.html" class="active">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Analytics
+    </a>
+    <a href="buy.html">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Properties
+    </a>
+    <a href="Manage Properties.html">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Manage Properties
+    </a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Analytics</h1>
+      <p id="analyticsSubtitle">Loading live market data…</p>
+    </div>
+
+    <!-- Error -->
+    <div class="error-banner" id="errorBanner">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="errorMsg">Could not connect to API.</span>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-grid" style="margin-bottom:28px;">
+      <div class="stat-card">
+        <div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+        <h2 id="sTotal" class="skeleton"> </h2>
+        <p id="sTotalLbl" class="skeleton"> </p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f4fd;color:#1a6fa3;"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+        <h2 id="sRent" class="skeleton"> </h2>
+        <p id="sRentLbl" class="skeleton"> </p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8fdf0;color:#10b981;"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <h2 id="sAvg" class="skeleton"> </h2>
+        <p id="sAvgLbl" class="skeleton"> </p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fdf8e8;color:#d97706;"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <h2 id="sCities" class="skeleton"> </h2>
+        <p id="sCitiesLbl" class="skeleton"> </p>
+      </div>
+    </div>
+
+    <!-- INSIGHT PILLS -->
+    <div class="insight-grid" id="insightGrid">
+      <div class="insight-pill"><div class="label">Most Listed City</div><div class="value skeleton" style="height:28px;width:120px;"> </div></div>
+      <div class="insight-pill"><div class="label">Most Common Type</div><div class="value skeleton" style="height:28px;width:120px;"> </div></div>
+      <div class="insight-pill"><div class="label">Highest Price</div><div class="value skeleton" style="height:28px;width:120px;"> </div></div>
+      <div class="insight-pill"><div class="label">Lowest Price</div><div class="value skeleton" style="height:28px;width:120px;"> </div></div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+
+      <div class="chart-wrapper full-width">
+        <h3>Properties by City</h3>
+        <p id="cityChartSub">Distribution of active listings across all cities</p>
+        <div id="cityChartWrap"><div class="chart-loading">Loading chart…</div></div>
+      </div>
+
+      <div class="chart-wrapper">
+        <h3>Listing Type Split</h3>
+        <p>For Sale vs For Rent</p>
+        <div id="typeChartWrap"><div class="chart-loading">Loading chart…</div></div>
+      </div>
+
+      <div class="chart-wrapper">
+        <h3>Property Type Breakdown</h3>
+        <p>Distribution by property category</p>
+        <div id="propTypeChartWrap"><div class="chart-loading">Loading chart…</div></div>
+      </div>
+
+      <div class="chart-wrapper full-width">
+        <h3>Price Distribution by Range</h3>
+        <p>How many properties fall in each price bracket (EGP)</p>
+        <div id="priceRangeWrap"><div class="chart-loading">Loading chart…</div></div>
+      </div>
+
+      <div class="chart-wrapper full-width">
+        <h3>Bedrooms Distribution</h3>
+        <p>Number of properties per bedroom count</p>
+        <div id="bedroomsChartWrap"><div class="chart-loading">Loading chart…</div></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+const ANALYTICS_API = "http://127.0.0.1:8000/analytics/";
+
+const COLORS = [
+  '#D31148',
+  '#3b82f6',
+  '#10b981',
+  '#f59e0b',
+  '#8b5cf6',
+  '#06b6d4',
+  '#ec4899',
+  '#84cc16'
+];
+
+function fmt(n) {
+  if (!n) return '0';
+
+  if (n >= 1000000) {
+    return (n / 1000000).toFixed(1) + 'M';
+  }
+
+  if (n >= 1000) {
+    return (n / 1000).toFixed(0) + 'K';
+  }
+
+  return Math.round(n).toString();
+}
+
+function unSkeleton(el, text) {
+  el.classList.remove('skeleton');
+  el.style.height = '';
+  el.style.width = '';
+  el.textContent = text;
+}
+
+function showError(msg) {
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorBanner').classList.add('show');
+}
+
+function makeCanvas(wrapId) {
+  const wrap = document.getElementById(wrapId);
+
+  wrap.innerHTML = '';
+
+  const canvas = document.createElement('canvas');
+
+  wrap.appendChild(canvas);
+
+  return canvas;
+}
+
+function chartDefaults() {
+  return {
+    responsive: true,
+    plugins: {
+      legend: {
+        labels: {
+          font: {
+            family: 'DM Sans',
+            size: 12
+          },
+          padding: 14
+        }
+      }
+    }
+  };
+}
+
+function renderStats(data) {
+
+  unSkeleton(
+    document.getElementById('sTotal'),
+    data.total_properties.toLocaleString()
+  );
+
+  unSkeleton(
+    document.getElementById('sTotalLbl'),
+    'Total Listings'
+  );
+
+  unSkeleton(
+    document.getElementById('sRent'),
+    data.rent_count.toLocaleString()
+  );
+
+  unSkeleton(
+    document.getElementById('sRentLbl'),
+    'For Rent'
+  );
+
+  unSkeleton(
+    document.getElementById('sAvg'),
+    fmt(data.avg_price)
+  );
+
+  unSkeleton(
+    document.getElementById('sAvgLbl'),
+    'Avg. Price (EGP)'
+  );
+
+  unSkeleton(
+    document.getElementById('sCities'),
+    data.cities_count.toString()
+  );
+
+  unSkeleton(
+    document.getElementById('sCitiesLbl'),
+    'Cities'
+  );
+
+  document.getElementById('analyticsSubtitle').textContent =
+    `Live data · ${data.total_properties} properties · ${data.cities_count} cities`;
+}
+
+function renderInsights(data) {
+
+  document.getElementById('insightGrid').innerHTML = `
+    <div class="insight-pill">
+      <div class="label">Most Listed City</div>
+      <div class="value">${data.top_city?.name || '—'}</div>
+      <div class="sub">${data.top_city?.count || 0} listings</div>
+    </div>
+
+    <div class="insight-pill">
+      <div class="label">Most Common Type</div>
+      <div class="value">${data.top_property_type?.name || '—'}</div>
+      <div class="sub">${data.top_property_type?.count || 0} properties</div>
+    </div>
+
+    <div class="insight-pill">
+      <div class="label">Highest Price</div>
+      <div class="value">${fmt(data.max_price)} EGP</div>
+      <div class="sub">Most expensive listing</div>
+    </div>
+
+    <div class="insight-pill">
+      <div class="label">Lowest Price</div>
+      <div class="value">${fmt(data.min_price)} EGP</div>
+      <div class="sub">Most affordable listing</div>
+    </div>
+  `;
+}
+
+function renderCityChart(cityDistribution) {
+
+  const cities = cityDistribution.slice(0, 10);
+
+  document.getElementById('cityChartSub').textContent =
+    `Distribution across ${cityDistribution.length} cities`;
+
+  const canvas = makeCanvas('cityChartWrap');
+
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: cities.map(c => c.city),
+      datasets: [{
+        label: 'Properties',
+        data: cities.map(c => c.count),
+        backgroundColor: COLORS,
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      ...chartDefaults(),
+
+      plugins: {
+        ...chartDefaults().plugins,
+
+        legend: {
+          display: false
+        }
+      },
+
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: '#f0eeec'
+          }
+        },
+
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderTypeChart(rentCount, totalProperties) {
+
+  const saleCount = totalProperties - rentCount;
+
+  const canvas = makeCanvas('typeChartWrap');
+
+  new Chart(canvas, {
+    type: 'doughnut',
+
+    data: {
+      labels: [
+        'For Sale',
+        'For Rent'
+      ],
+
+      datasets: [{
+        data: [
+          saleCount,
+          rentCount
+        ],
+
+        backgroundColor: [
+          COLORS[0],
+          COLORS[1]
+        ],
+
+        borderWidth: 0
+      }]
+    },
+
+    options: {
+      ...chartDefaults(),
+
+      cutout: '65%'
+    }
+  });
+}
+
+function renderPropTypeChart(distribution) {
+
+  const types = distribution.slice(0, 8);
+
+  const canvas = makeCanvas('propTypeChartWrap');
+
+  new Chart(canvas, {
+    type: 'doughnut',
+
+    data: {
+      labels: types.map(t => t.type),
+
+      datasets: [{
+        data: types.map(t => t.count),
+        backgroundColor: COLORS,
+        borderWidth: 0
+      }]
+    },
+
+    options: {
+      ...chartDefaults(),
+
+      cutout: '55%'
+    }
+  });
+}
+
+function renderPriceRange(distribution) {
+
+  if (!distribution || !distribution.length) {
+
+    document.getElementById('priceRangeWrap').innerHTML =
+      '<p style="color:var(--mid)">No price data available</p>';
+
+    return;
+  }
+
+  const max = Math.max(
+    ...distribution.map(x => x.count)
+  );
+
+  document.getElementById('priceRangeWrap').innerHTML =
+    distribution.map((item, i) => `
+      <div class="range-row">
+
+        <div class="range-label">
+          ${item.label}
+        </div>
+
+        <div class="range-bar-wrap">
+          <div
+            class="range-bar"
+            style="
+              width:${max ? (item.count / max) * 100 : 0}%;
+              background:${COLORS[i % COLORS.length]};
+            ">
+          </div>
+        </div>
+
+        <div class="range-count">
+          ${item.count}
+        </div>
+
+      </div>
+    `).join('');
+}
+
+function renderBedroomsChart(distribution) {
+
+  if (!distribution.length) {
+
+    document.getElementById('bedroomsChartWrap').innerHTML =
+      '<p style="color:var(--mid)">No bedroom data available</p>';
+
+    return;
+  }
+
+  const canvas = makeCanvas('bedroomsChartWrap');
+
+  new Chart(canvas, {
+
+    type: 'bar',
+
+    data: {
+
+      labels: distribution.map(item =>
+        item.bedrooms === 0
+          ? 'Studio'
+          : `${item.bedrooms} BR`
+      ),
+
+      datasets: [{
+        label: 'Properties',
+        data: distribution.map(item => item.count),
+        backgroundColor: COLORS[0],
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+
+    options: {
+
+      ...chartDefaults(),
+
+      plugins: {
+        ...chartDefaults().plugins,
+
+        legend: {
+          display: false
+        }
+      },
+
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: '#f0eeec'
+          }
+        },
+
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+async function init() {
+
+  try {
+
+    const response = await fetch(
+      ANALYTICS_API
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    renderStats(data);
+
+    renderInsights(data);
+
+    renderCityChart(
+      data.city_distribution || []
+    );
+
+    renderTypeChart(
+      data.rent_count || 0,
+      data.total_properties || 0
+    );
+
+    renderPropTypeChart(
+      data.property_type_distribution || []
+    );
+
+    renderPriceRange(
+      data.price_distribution || []
+    );
+
+    renderBedroomsChart(
+      data.bedrooms_distribution || []
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    showError(
+      `Cannot reach Analytics API (${err.message})`
+    );
+
+    document.getElementById(
+      'analyticsSubtitle'
+    ).textContent = 'API unavailable';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

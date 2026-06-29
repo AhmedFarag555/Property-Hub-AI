@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login – PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="image/logo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #D31148;
+      --primary-dark: #a50d38;
+      --dark: #1a1816;
+      --dark-2: #2c2a26;
+      --mid: #6b6967;
+      --light: #f5f4f2;
+      --white: #ffffff;
+      --border: #e5e3e0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--light);
+      color: var(--dark-2);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* LEFT PANEL */
+    .form-side {
+      flex: 0 0 50%;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 80px;
+      position: relative;
+    }
+
+    .brand {
+      position: absolute;
+      top: 36px;
+      left: 80px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: 1.3rem;
+      color: var(--dark);
+      text-decoration: none;
+    }
+    .brand span { color: var(--primary); }
+
+    .form-heading { margin-bottom: 32px; }
+    .form-heading h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.6rem;
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+    .form-heading h1 span { color: var(--primary); }
+    .form-heading p { color: var(--mid); font-size: 0.95rem; }
+
+    /* TABS */
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      border-bottom: 2px solid var(--border);
+    }
+    .auth-tab-btn {
+      background: none;
+      border: none;
+      padding: 10px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--mid);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .auth-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* FORM */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--mid);
+      margin-bottom: 7px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--dark-2);
+      background: var(--light);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(211,17,72,0.1);
+      background: white;
+    }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn-submit:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .error-msg {
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-top: 10px;
+      display: none;
+      padding: 10px 14px;
+      background: rgba(211,17,72,0.07);
+      border-radius: 8px;
+    }
+
+    /* RIGHT PANEL */
+    .image-side {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .image-side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .image-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(26,24,22,0.55) 0%, rgba(211,17,72,0.25) 100%);
+    }
+    .image-text {
+      position: absolute;
+      bottom: 60px;
+      left: 48px;
+      right: 48px;
+      color: white;
+    }
+    .image-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .image-text p { font-size: 0.95rem; opacity: 0.85; line-height: 1.6; }
+
+    .badge-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+    .badge-item {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .form-side { flex: none; padding: 80px 32px 40px; }
+      .brand { left: 32px; }
+      .image-side { min-height: 280px; }
+    }
+  
+    /* ── FORGOT PASSWORD / OTP MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(26,24,22,0.55);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 16px; padding: 32px;
+      width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      animation: modalIn .25s ease;
+    }
+    @keyframes modalIn { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+    .modal-box h3 { font-family:'Playfair Display',serif; font-size:1.3rem; margin:0 0 6px }
+    .modal-box .modal-sub { color:#888; font-size:.85rem; margin:0 0 20px; line-height:1.5 }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px; background: none; border: none;
+      font-size: 1.2rem; cursor: pointer; color: #999; line-height: 1;
+    }
+    .modal-box { position: relative }
+    .otp-inputs { display: flex; gap: 8px; justify-content: center; margin: 8px 0 20px }
+    .otp-inputs input {
+      width: 44px; height: 52px; text-align: center; font-size: 1.3rem; font-weight: 700;
+      border: 1.5px solid #e0e0e0; border-radius: 10px; outline: none; transition: .2s;
+    }
+    .otp-inputs input:focus { border-color: #D31148 }
+    .modal-link {
+      display: block; text-align: center; font-size: .82rem; color: #D31148;
+      cursor: pointer; margin-top: 14px; text-decoration: none; background: none; border: none;
+      width: 100%;
+    }
+    .modal-link:disabled { color: #ccc; cursor: not-allowed }
+    .forgot-link {
+      display: block; text-align: right; font-size: .82rem; color: #D31148;
+      margin: -8px 0 16px; cursor: pointer; text-decoration: none;
+    }
+    .modal-success {
+      text-align: center; padding: 8px 0;
+    }
+    .modal-success .ico { font-size: 2.5rem; margin-bottom: 8px }
+  </style>
+</head>
+<script src="api.js"></script>
+<body>
+
+<!-- FORM SIDE -->
+<div class="form-side">
+  <a href="#" class="brand">PROPERTY<span>HUB</span></a>
+
+  <div class="form-heading">
+    <h1>Hello, <span>Welcome</span><br>Back!</h1>
+    <p>Sign in to your account or create a new one</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="auth-tabs">
+    <button class="auth-tab-btn active" onclick="switchTab('userLogin', this)">User</button>
+    <button class="auth-tab-btn" onclick="switchTab('adminLogin', this)">Admin</button>
+    <button class="auth-tab-btn" onclick="switchTab('register', this)">Register</button>
+  </div>
+
+  <!-- USER LOGIN -->
+  <div class="tab-pane active" id="userLogin">
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input type="email" class="form-control" placeholder="you@example.com" id="userEmail" onkeydown="if(event.key==='Enter')handleLogin('user')">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" placeholder="••••••••" id="userPass" onkeydown="if(event.key==='Enter')handleLogin('user')">
+    </div>
+    <a class="forgot-link" onclick="openForgotModal()">Forgot password?</a>
+    <button class="btn-submit" onclick="handleLogin('user')">Sign In as User</button>
+    <div class="error-msg" id="userErr">Please fill in all fields.</div>
+  </div>
+
+  <!-- ADMIN LOGIN -->
+  <div class="tab-pane" id="adminLogin">
+    <div class="form-group">
+      <label class="form-label">Admin Email</label>
+      <input type="email" class="form-control" placeholder="admin@propertyhub.com" id="adminEmail" onkeydown="if(event.key==='Enter')handleLogin('admin')">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" placeholder="••••••••" id="adminPass" onkeydown="if(event.key==='Enter')handleLogin('admin')">
+    </div>
+    <a class="forgot-link" onclick="openForgotModal()">Forgot password?</a>
+    <button class="btn-submit" onclick="handleLogin('admin')">Sign In as Admin</button>
+    <div class="error-msg" id="adminErr">Please fill in all fields.</div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="tab-pane" id="register">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input type="text" class="form-control" placeholder="John" id="regFirst">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input type="text" class="form-control" placeholder="Doe" id="regLast">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input type="email" class="form-control" placeholder="you@example.com" id="regEmail">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone Number</label>
+      <input type="text" class="form-control" placeholder="01000000000" id="regPhone">
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" placeholder="••••••••" id="regPass">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" placeholder="••••••••" id="regConfirm" onkeydown="if(event.key==='Enter')handleRegister()">
+      </div>
+    </div>
+    <button class="btn-submit" onclick="handleRegister()">Create Account</button>
+    <div class="error-msg" id="regErr">Please fill in all required fields.</div>
+  </div>
+</div>
+
+<!-- IMAGE SIDE -->
+<div class="image-side">
+  <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80" alt="Luxury property">
+  <div class="image-overlay"></div>
+  <div class="image-text">
+    <h2>Find Your Dream Property in Egypt</h2>
+    <p>Browse thousands of verified listings across Alexandria, Cairo, and beyond. Buy, rent, or invest with confidence.</p>
+    <div class="badge-row">
+      <span class="badge-item">🏠 120+ Properties</span>
+      <span class="badge-item">📍 All Cities</span>
+      <span class="badge-item">✅ Verified Listings</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: VERIFY EMAIL (after register) ══════════ -->
+<div class="modal-overlay" id="verifyModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('verifyModal')">✕</button>
+    <h3>📧 Verify your email</h3>
+    <p class="modal-sub">We sent a 6-digit code to <strong id="verifyEmailLabel"></strong>. Enter it below to activate your account.</p>
+    <div class="otp-inputs">
+      <input type="text" maxlength="1" inputmode="numeric" class="otp-box" data-i="0">
+      <input type="text" maxlength="1" inputmode="numeric" class="otp-box" data-i="1">
+      <input type="text" maxlength="1" inputmode="numeric" class="otp-box" data-i="2">
+      <input type="text" maxlength="1" inputmode="numeric" class="otp-box" data-i="3">
+      <input type="text" maxlength="1" inputmode="numeric" class="otp-box" data-i="4">
+      <input type="text" maxlength="1" inputmode="numeric" class="otp-box" data-i="5">
+    </div>
+    <button class="btn-submit" onclick="submitVerify()">Verify Email</button>
+    <div class="error-msg" id="verifyErr">Invalid code.</div>
+    <button class="modal-link" id="resendBtn" onclick="resendCode()">Resend code</button>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: FORGOT PASSWORD — STEP 1: email ══════════ -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('forgotModal')">✕</button>
+    <h3>🔑 Forgot password?</h3>
+    <p class="modal-sub">Enter your account email and we'll send you a reset code.</p>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input type="email" class="form-control" placeholder="you@example.com" id="forgotEmail" onkeydown="if(event.key==='Enter')submitForgot()">
+    </div>
+    <button class="btn-submit" onclick="submitForgot()">Send reset code</button>
+    <div class="error-msg" id="forgotErr">Something went wrong.</div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: RESET PASSWORD — STEP 2: code + new password ══════════ -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('resetModal')">✕</button>
+    <h3>🔐 Reset password</h3>
+    <p class="modal-sub">Enter the 6-digit code sent to <strong id="resetEmailLabel"></strong> and choose a new password.</p>
+    <div class="otp-inputs">
+      <input type="text" maxlength="1" inputmode="numeric" class="reset-otp-box" data-i="0">
+      <input type="text" maxlength="1" inputmode="numeric" class="reset-otp-box" data-i="1">
+      <input type="text" maxlength="1" inputmode="numeric" class="reset-otp-box" data-i="2">
+      <input type="text" maxlength="1" inputmode="numeric" class="reset-otp-box" data-i="3">
+      <input type="text" maxlength="1" inputmode="numeric" class="reset-otp-box" data-i="4">
+      <input type="text" maxlength="1" inputmode="numeric" class="reset-otp-box" data-i="5">
+    </div>
+    <div class="form-group">
+      <label class="form-label">New Password</label>
+      <input type="password" class="form-control" placeholder="••••••••" id="resetNewPass">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirm New Password</label>
+      <input type="password" class="form-control" placeholder="••••••••" id="resetConfirmPass" onkeydown="if(event.key==='Enter')submitReset()">
+    </div>
+    <button class="btn-submit" onclick="submitReset()">Reset password</button>
+    <div class="error-msg" id="resetErr">Something went wrong.</div>
+    <button class="modal-link" id="resendResetBtn" onclick="resendResetCode()">Resend code</button>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: SUCCESS ══════════ -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('successModal')">✕</button>
+    <div class="modal-success">
+      <div class="ico">✅</div>
+      <h3 id="successTitle">Success</h3>
+      <p class="modal-sub" id="successMsg"></p>
+      <button class="btn-submit" onclick="closeModal('successModal')">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════ MODAL HELPERS ══════════
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function showSuccess(title, msg, redirectTo) {
+  document.getElementById('successTitle').textContent = title;
+  document.getElementById('successMsg').textContent   = msg;
+  openModal('successModal');
+  if (redirectTo) {
+    setTimeout(() => { window.location.href = redirectTo; }, 1800);
+  }
+}
+
+// ══════════ OTP INPUT BEHAVIOR (auto-advance) ══════════
+function wireOtpInputs(selector) {
+  const boxes = document.querySelectorAll(selector);
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/[^0-9]/g, '');
+      if (box.value && i < boxes.length - 1) boxes[i+1].focus();
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i-1].focus();
+      if (e.key === 'Enter') {
+        if (selector === '.otp-box') submitVerify();
+        if (selector === '.reset-otp-box') submitReset();
+      }
+    });
+    box.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, boxes.length);
+      text.split('').forEach((ch, idx) => { if (boxes[idx]) boxes[idx].value = ch; });
+      if (text.length) boxes[Math.min(text.length, boxes.length) - 1].focus();
+    });
+  });
+}
+wireOtpInputs('.otp-box');
+wireOtpInputs('.reset-otp-box');
+
+function readOtp(selector) {
+  return [...document.querySelectorAll(selector)].map(b => b.value).join('');
+}
+function clearOtp(selector) {
+  document.querySelectorAll(selector).forEach(b => b.value = '');
+}
+
+// ══════════ LOGIN ══════════
+async function handleLogin(role) {
+
+  const email = document.getElementById(
+    role === 'user' ? 'userEmail' : 'adminEmail'
+  ).value.trim();
+
+  const pass = document.getElementById(
+    role === 'user' ? 'userPass' : 'adminPass'
+  ).value.trim();
+
+  const err = document.getElementById(
+    role === 'user' ? 'userErr' : 'adminErr'
+  );
+
+  if (!email || !pass) {
+    err.textContent = 'Please fill in all fields.';
+    err.style.display = 'block';
+    return;
+  }
+
+  err.style.display = 'none';
+
+  try {
+    const formData = new URLSearchParams();
+    formData.append("username", email);
+    formData.append("password", pass);
+
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // ✅ لو الإيميل مش متأكد — افتح verify modal مباشرة
+      if (response.status === 403 && (data.detail || '').toLowerCase().includes('not verified')) {
+        document.getElementById('verifyEmailLabel').textContent = email;
+        verifyEmailCache = email;
+        openModal('verifyModal');
+        err.textContent = 'Please verify your email first — code sent below.';
+        err.style.display = 'block';
+        // ابعت كود تأكيد جديد
+        fetch(`${API_BASE}/auth/resend-code`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ email })
+        });
+        return;
+      }
+      throw new Error(data.detail || "Login failed");
+    }
+
+    localStorage.setItem("token", data.access_token);
+    localStorage.setItem("user_id", data.user_id || "");
+    localStorage.setItem("user_name", (data.first_name || "") + " " + (data.last_name || ""));
+    localStorage.setItem("is_admin", data.is_admin ? "1" : "0");
+
+    if (role === 'admin' && !data.is_admin) {
+      throw new Error("Access denied. This account is not an admin.");
+    }
+    if (role === 'user' && data.is_admin) {
+      throw new Error("Access denied. Please use the Admin tab.");
+    }
+
+    if (data.is_admin) {
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'buy.html';
+    }
+
+  } catch (error) {
+    console.error(error);
+    err.textContent = error.message;
+    err.style.display = 'block';
+  }
+}
+
+// ══════════ REGISTER ══════════
+let verifyEmailCache = '';
+
+async function handleRegister() {
+
+  const first   = document.getElementById('regFirst').value.trim();
+  const last    = document.getElementById('regLast').value.trim();
+  const email   = document.getElementById('regEmail').value.trim();
+  const phone   = document.getElementById('regPhone').value.trim();
+  const pass    = document.getElementById('regPass').value.trim();
+  const confirm = document.getElementById('regConfirm').value.trim();
+
+  const err = document.getElementById('regErr');
+
+  if (!first || !last || !email || !phone || !pass || !confirm) {
+    err.textContent = 'Please fill in all fields.';
+    err.style.display = 'block';
+    return;
+  }
+  if (pass !== confirm) {
+    err.textContent = 'Passwords do not match.';
+    err.style.display = 'block';
+    return;
+  }
+  if (pass.length < 6) {
+    err.textContent = 'Password must be at least 6 characters.';
+    err.style.display = 'block';
+    return;
+  }
+
+  err.style.display = 'none';
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ first_name: first, last_name: last, email, phone, password: pass })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.detail || "Register failed");
+
+    // ✅ افتح modal التأكيد بالكود
+    verifyEmailCache = email;
+    document.getElementById('verifyEmailLabel').textContent = email;
+    clearOtp('.otp-box');
+    openModal('verifyModal');
+    document.querySelectorAll('.otp-box')[0].focus();
+
+  } catch (error) {
+    console.error(error);
+    err.textContent = error.message;
+    err.style.display = 'block';
+  }
+}
+
+// ══════════ VERIFY EMAIL ══════════
+async function submitVerify() {
+  const code = readOtp('.otp-box');
+  const err  = document.getElementById('verifyErr');
+
+  if (code.length !== 6) {
+    err.textContent = 'Please enter the full 6-digit code.';
+    err.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res  = await fetch(`${API_BASE}/auth/verify-email`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email: verifyEmailCache, code })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Verification failed');
+
+    err.style.display = 'none';
+    closeModal('verifyModal');
+
+    // نظف فورم الريجستر
+    ['regFirst','regLast','regEmail','regPhone','regPass','regConfirm'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+
+    showSuccess('Email verified! ✅', 'Your account is now active. You can sign in.', null);
+    const loginBtn = document.querySelectorAll('.auth-tab-btn')[0];
+    switchTab('userLogin', loginBtn);
+
+  } catch (e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+}
+
+async function resendCode() {
+  const btn = document.getElementById('resendBtn');
+  btn.disabled = true;
+  let seconds = 30;
+  const original = btn.textContent;
+  btn.textContent = `Resend in ${seconds}s`;
+  const timer = setInterval(() => {
+    seconds--;
+    btn.textContent = `Resend in ${seconds}s`;
+    if (seconds <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = original; }
+  }, 1000);
+
+  try {
+    if (
+        response.status === 403 &&
+        (data.detail || '').toLowerCase().includes('not verified')
+    ) {
+        document.getElementById('verifyEmailLabel').textContent = email;
+        verifyEmailCache = email;
+
+        openModal('verifyModal');
+
+        err.textContent = 'Please verify your email first.';
+        err.style.display = 'block';
+
+        return;
+    }
+  } catch(e) { console.error(e); }
+}
+
+// ══════════ FORGOT PASSWORD — STEP 1 ══════════
+let resetEmailCache = '';
+
+function openForgotModal() {
+  document.getElementById('forgotEmail').value = '';
+  document.getElementById('forgotErr').style.display = 'none';
+  openModal('forgotModal');
+  document.getElementById('forgotEmail').focus();
+}
+
+async function submitForgot() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const err   = document.getElementById('forgotErr');
+
+  if (!email) {
+    err.textContent = 'Please enter your email.';
+    err.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Something went wrong');
+
+    err.style.display = 'none';
+    closeModal('forgotModal');
+
+    // ✅ افتح modal الكود + باسورد جديد
+    resetEmailCache = email;
+    document.getElementById('resetEmailLabel').textContent = email;
+    clearOtp('.reset-otp-box');
+    document.getElementById('resetNewPass').value = '';
+    document.getElementById('resetConfirmPass').value = '';
+    openModal('resetModal');
+    document.querySelectorAll('.reset-otp-box')[0].focus();
+
+  } catch (e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+}
+
+// ══════════ RESET PASSWORD — STEP 2 ══════════
+async function submitReset() {
+  const code    = readOtp('.reset-otp-box');
+  const pass    = document.getElementById('resetNewPass').value.trim();
+  const confirm = document.getElementById('resetConfirmPass').value.trim();
+  const err     = document.getElementById('resetErr');
+
+  if (code.length !== 6) {
+    err.textContent = 'Please enter the full 6-digit code.';
+    err.style.display = 'block';
+    return;
+  }
+  if (pass.length < 6) {
+    err.textContent = 'Password must be at least 6 characters.';
+    err.style.display = 'block';
+    return;
+  }
+  if (pass !== confirm) {
+    err.textContent = 'Passwords do not match.';
+    err.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res  = await fetch(`${API_BASE}/auth/reset-password`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email: resetEmailCache, code, new_password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Reset failed');
+
+    err.style.display = 'none';
+    closeModal('resetModal');
+    showSuccess('Password reset! ✅', 'You can now sign in with your new password.', null);
+
+  } catch (e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+}
+
+async function resendResetCode() {
+  const btn = document.getElementById('resendResetBtn');
+  btn.disabled = true;
+  let seconds = 30;
+  const original = btn.textContent;
+  btn.textContent = `Resend in ${seconds}s`;
+  const timer = setInterval(() => {
+    seconds--;
+    btn.textContent = `Resend in ${seconds}s`;
+    if (seconds <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = original; }
+  }, 1000);
+
+  try {
+    await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email: resetEmailCache })
+    });
+  } catch(e) { console.error(e); }
+}
+
+// ══════════ KEYBOARD SHORTCUT: Esc closes any open modal ══════════
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    ['verifyModal','forgotModal','resetModal','successModal'].forEach(id => closeModal(id));
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard – PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="image/logo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .activity-list { list-style: none; }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .activity-text { flex: 1; font-size: 0.9rem; color: var(--dark-2); }
+    .activity-time { font-size: 0.8rem; color: var(--mid); }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--dark) 0%, #3a1a28 100%);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      color: white;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    .section-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+    }
+
+    .quick-action {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      text-decoration: none;
+      color: var(--dark-2);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+  <a href="login.html" class="navbar-brand">PROPERTY<span>HUB</span></a>
+  <div class="navbar-links">
+    <a href="buy.html">Properties</a>
+    <a href="Manage Properties.html">Manage Properties</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="login.html" class="btn-primary">Logout</a>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      PROPERTY<span>HUB</span><br>
+      <small>Admin Panel</small>
+    </div>
+
+    <a href="dashboard.html" class="active">Dashboard</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="buy.html">Properties</a>
+    <a href="Manage Properties.html">Manage Properties</a>
+  </aside>
+
+  <main class="main-content">
+
+    <div class="welcome-banner">
+      <h2>Welcome back, Admin 👋</h2>
+      <p>Here's what's happening today.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <h2 id="totalProperties">0</h2>
+        <p>Total Properties</p>
+      </div>
+
+      <div class="stat-card">
+        <h2 id="registeredUsers">0</h2>
+        <p>Registered Users</p>
+      </div>
+
+      <div class="stat-card">
+        <h2 id="avgPrice">0</h2>
+        <p>Avg. Price (EGP)</p>
+      </div>
+
+    </div>
+
+    <!-- TWO COL -->
+    <div class="two-col">
+
+      <div class="section-card">
+        <h3>Recent Activity</h3>
+        <ul class="activity-list" id="activityList"></ul>
+      </div>
+
+      <div class="section-card">
+        <h3>Quick Actions</h3>
+
+        <a href="buy.html" class="quick-action"> View Properties</a>
+        <a href="Manage Properties.html" class="quick-action"> Manage Properties</a>
+        <a href="analytics.html" class="quick-action"> Analytics</a>
+
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+const API = "http://127.0.0.1:8000/analytics/dashboard";
+
+function formatPrice(v) {
+  if (!v) return "0";
+  if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + "M";
+  if (v >= 1_000) return (v / 1_000).toFixed(0) + "K";
+  return Math.round(v);
+}
+
+function renderActivity(list) {
+  const el = document.getElementById("activityList");
+
+  if (!Array.isArray(list) || list.length === 0) {
+    el.innerHTML = "<li>No recent activity</li>";
+    return;
+  }
+
+  el.innerHTML = list.map(i => `
+    <li class="activity-item">
+      <div class="activity-dot"></div>
+      <div class="activity-text">${i.text}</div>
+      <div class="activity-time">${i.time}</div>
+    </li>
+  `).join("");
+}
+
+async function loadDashboard() {
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+
+    document.getElementById("totalProperties").textContent = data.total_properties;
+    document.getElementById("registeredUsers").textContent = data.registered_users;
+    document.getElementById("avgPrice").textContent = formatPrice(data.avg_price);
+
+    renderActivity(data.recent_activity);
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>

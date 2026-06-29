@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#D31148">
+  <link rel="apple-touch-icon" href="image/icon-192.png">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'DM Sans',sans-serif;
+      background:#f5f4f2;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .spinner{
+      width:36px;height:36px;
+      border:3px solid #e5e3e0;
+      border-top-color:#D31148;
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <script>
+    // ── نقطة الدخول الافتراضية للـ PWA ──────────────────────────────────────
+    // لو فيه token محفوظ ولسه شغال + آخر صفحة محفوظة → روح عليها
+    // غير كده → login.html
+
+    const token    = localStorage.getItem('token');
+    const lastPage = localStorage.getItem('last_page');
+    const isAdmin  = localStorage.getItem('is_admin') === '1';
+
+    // الصفحات المسموح بالرجوع ليها (أمان: متمنع رجوع لصفحات لوجين/أدمن لو الـ user عادي)
+    const adminOnlyPages = ['dashboard.html', 'analytics.html', 'manage_properties.html'];
+
+    function fallback() {
+      window.location.replace(isAdmin ? 'dashboard.html' : 'buy.html');
+    }
+
+    if (!token) {
+      window.location.replace('login.html');
+    } else if (lastPage && lastPage !== 'login.html' && lastPage !== 'launch.html') {
+      // لو الصفحة المحفوظة admin-only والـ user مش admin → fallback
+      if (adminOnlyPages.includes(lastPage) && !isAdmin) {
+        fallback();
+      } else {
+        window.location.replace(lastPage);
+      }
+    } else {
+      fallback();
+    }
+  </script>
+</body>
+</html>

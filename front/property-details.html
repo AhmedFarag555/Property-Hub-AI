@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Property Details – PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary:#D31148;--primary-dark:#a50d38;--primary-light:#fde8ef;
+      --dark:#1a1816;--dark-2:#2c2a26;--mid:#6b6967;--light:#f5f4f2;
+      --white:#fff;--border:#e5e3e0;
+      --card-shadow:0 4px 24px rgba(0,0,0,.08);
+      --card-shadow-hover:0 12px 40px rgba(0,0,0,.15);
+      --radius:16px;--radius-sm:8px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'DM Sans',sans-serif;background:var(--light);color:var(--dark-2)}
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+    .navbar-brand{font-family:'Playfair Display',serif;font-weight:900;font-size:1.4rem;color:var(--dark);text-decoration:none}
+    .navbar-brand span{color:var(--primary)}
+    .navbar-links{display:flex;gap:32px;align-items:center}
+    .navbar-links a{text-decoration:none;color:var(--mid);font-size:.9rem;font-weight:500;transition:color .2s}
+    .navbar-links a:hover,.navbar-links a.active{color:var(--primary)}
+    .btn-outline{background:transparent;color:var(--dark-2);border:1.5px solid var(--border);padding:10px 24px;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:all .2s}
+    .btn-outline:hover{border-color:var(--dark-2);background:var(--dark-2);color:white}
+    .breadcrumb{padding:16px 48px;font-size:.85rem;color:var(--mid);display:flex;align-items:center;gap:8px}
+    .breadcrumb a{color:var(--mid);text-decoration:none;transition:color .2s}
+    .breadcrumb a:hover{color:var(--primary)}
+    .breadcrumb strong{color:var(--dark-2)}
+    .page-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 48px;gap:16px;color:var(--mid)}
+    .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .error-box{max-width:500px;margin:80px auto;text-align:center;padding:40px;background:white;border-radius:var(--radius);border:1px solid var(--border)}
+    .error-box h2{font-family:'Playfair Display',serif;color:var(--dark);margin-bottom:10px}
+    .error-box p{color:var(--mid);margin-bottom:20px}
+    .error-box a{color:var(--primary);text-decoration:none;font-weight:600}
+    .gallery-wrapper{margin-bottom:40px;border-radius:var(--radius);overflow:hidden}
+    .gallery-1{display:grid;grid-template-columns:1fr;height:480px}
+    .gallery-2{display:grid;grid-template-columns:1fr 1fr;height:480px;gap:12px}
+    .gallery-3{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:240px 228px;gap:12px}
+    .gallery-3 .g-main{grid-row:span 2}
+    .gallery-4{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:280px 200px;gap:12px}
+    .gallery-4 .g-main{grid-row:span 2}
+    .g-thumb{position:relative;overflow:hidden;cursor:pointer;border-radius:var(--radius-sm)}
+    .g-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+    .g-thumb:hover img{transform:scale(1.04)}
+    .g-thumb .gallery-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+    .g-thumb:hover .gallery-overlay{opacity:1}
+    .g-thumb .gallery-overlay span{color:white;font-size:.9rem;font-weight:600}
+    .g-more-badge{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .g-more-badge span{color:white;font-size:1.1rem;font-weight:700}
+    .gallery-badge{position:absolute;top:20px;left:20px;background:var(--primary);color:white;padding:5px 14px;border-radius:50px;font-size:.8rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;z-index:2}
+    .details-container{max-width:1200px;margin:0 auto;padding:0 48px 64px}
+    .content-grid{display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start}
+    .prop-header{margin-bottom:24px}
+    .prop-header h1{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--dark);line-height:1.2;margin-bottom:8px}
+    .prop-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .location-tag{display:flex;align-items:center;gap:6px;color:var(--mid);font-size:.95rem}
+    .meta-badge{padding:4px 12px;border-radius:50px;font-size:.78rem;font-weight:700}
+    .prop-stats{display:flex;gap:24px;padding:20px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:28px;flex-wrap:wrap}
+    .stat-item{text-align:center}
+    .stat-item .val{font-size:1.3rem;font-weight:700;color:var(--dark);font-family:'Playfair Display',serif}
+    .stat-item .lbl{font-size:.78rem;color:var(--mid);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+    .sec-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--dark);margin-bottom:14px}
+    .description{color:var(--mid);font-size:.97rem;line-height:1.8;margin-bottom:32px}
+    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px}
+    .feature-item{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.88rem;color:var(--dark-2);font-weight:500}
+    .feature-item .ico{font-size:1.2rem}
+    .map-section{margin-bottom:32px}
+    .map-frame{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);height:280px}
+    .map-frame iframe{width:100%;height:100%;border:none}
+    .map-open-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--primary);color:white;text-decoration:none;border-radius:50px;font-size:.88rem;font-weight:600;transition:.2s;margin-top:12px}
+    .map-open-btn:hover{background:var(--primary-dark);transform:translateY(-2px)}
+    .price-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--card-shadow);padding:28px;position:sticky;top:90px}
+    .price-card .price-val{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--primary);margin-bottom:4px}
+    .price-card .price-note{font-size:.82rem;color:var(--mid);margin-bottom:24px}
+    .agent-row{display:flex;align-items:center;gap:12px;padding-top:0;margin-top:0}
+    .agent-avatar{width:46px;height:46px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:var(--primary);flex-shrink:0}
+    .agent-info .name{font-weight:600;font-size:.9rem;color:var(--dark)}
+    .agent-info .role{font-size:.8rem;color:var(--mid)}
+    .agent-actions{display:flex;gap:8px;margin-top:14px}
+    .agent-btn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:white;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s;color:var(--dark-2);text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;}
+    .agent-btn:hover{border-color:var(--primary);color:var(--primary)}
+    .recs-section{padding:56px 48px;background:white;border-top:1px solid var(--border)}
+    .recs-inner{max-width:1200px;margin:0 auto}
+    .recs-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:20px;flex-wrap:wrap}
+    .recs-title{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--dark);margin-bottom:6px}
+    .recs-subtitle{color:var(--mid);font-size:.92rem}
+    .ai-badge{display:inline-flex;align-items:center;gap:8px;background:var(--dark);color:white;padding:9px 18px;border-radius:50px;font-size:.8rem;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+    .ai-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+    .signal-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:28px}
+    .signal-label{font-size:.82rem;color:var(--mid);font-weight:500}
+    .signal-tag{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:50px;font-size:.78rem;font-weight:600}
+    .s-loc{background:#e8f4fd;color:#1a5fa3}.s-price{background:#fde8ef;color:var(--primary)}.s-type{background:#e8fdf0;color:#166534}.s-rooms{background:#fef3e2;color:#92400e}.s-hist{background:#f3e8ff;color:#6b21a8}
+    .ai-thinking{display:flex;align-items:center;gap:14px;padding:16px 20px;background:#fafafa;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:28px}
+    .thinking-dots{display:flex;gap:5px}
+    .thinking-dots span{width:7px;height:7px;background:var(--primary);border-radius:50%;animation:bounce 1.2s infinite}
+    .thinking-dots span:nth-child(2){animation-delay:.2s}.thinking-dots span:nth-child(3){animation-delay:.4s}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    .thinking-text{font-size:.85rem;color:var(--mid)}
+    .thinking-text strong{color:var(--dark-2)}
+    .recs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;opacity:0;transition:opacity .5s}
+    .recs-grid.visible{opacity:1}
+    .rec-card{background:var(--white);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);box-shadow:var(--card-shadow);transition:.25s;cursor:pointer;position:relative}
+    .rec-card:hover{box-shadow:var(--card-shadow-hover);transform:translateY(-5px)}
+    .rec-card img{width:100%;height:185px;object-fit:cover;display:block}
+    .rec-score{position:absolute;top:12px;right:12px;background:rgba(26,24,22,.82);color:white;padding:5px 11px;border-radius:50px;font-size:.75rem;font-weight:700;display:flex;align-items:center;gap:4px}
+    .rec-star{color:#fbbf24}
+    .rec-fav{position:absolute;top:12px;left:12px;width:32px;height:32px;background:rgba(255,255,255,.9);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:.2s}
+    .rec-fav:hover{background:white;transform:scale(1.1)}
+    .rec-body{padding:18px}
+    .rec-badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+    .rb-sale{background:var(--primary-light);color:var(--primary)}.rb-rent{background:#e8f4fd;color:#1a6fa3}
+    .rec-body h3{font-family:'Playfair Display',serif;font-weight:700;font-size:1.05rem;color:var(--dark);margin-bottom:4px}
+    .rec-price{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:5px}
+    .rec-loc{color:var(--mid);font-size:.82rem;margin-bottom:12px}
+    .rec-tags{display:flex;flex-wrap:wrap;gap:5px}
+    .rec-tag{font-size:.7rem;padding:3px 9px;border-radius:50px;font-weight:600}
+    .rt-loc{background:#e8f4fd;color:#1a5fa3}.rt-price{background:#fde8ef;color:var(--primary)}.rt-type{background:#e8fdf0;color:#166534}.rt-rooms{background:#fef3e2;color:#92400e}.rt-hist{background:#f3e8ff;color:#6b21a8}
+    @media(max-width:900px){
+      .content-grid{grid-template-columns:1fr}
+      .gallery-3,.gallery-4{grid-template-columns:1fr;grid-template-rows:250px 160px 160px}
+      .gallery-3 .g-main,.gallery-4 .g-main{grid-row:span 1}
+      .details-container,.breadcrumb{padding-left:24px;padding-right:24px}
+      .recs-section{padding:40px 24px}
+      .navbar{padding:16px 24px}
+      .features-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    .image-modal{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+    .image-modal.active{display:flex}
+    .image-modal-inner{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+    .image-modal img{max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain;transition:opacity .2s}
+    .image-modal-close{position:absolute;top:20px;right:24px;font-size:42px;color:white;cursor:pointer;font-weight:300;line-height:1;z-index:10}
+    .modal-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;background:rgba(255,255,255,.15);border:none;border-radius:50%;color:white;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(4px);z-index:10}
+    .modal-nav:hover{background:rgba(255,255,255,.3)}
+    .modal-prev{left:20px}.modal-next{right:20px}
+    .modal-counter{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.8);font-size:.85rem;font-weight:500;background:rgba(0,0,0,.4);padding:6px 16px;border-radius:50px}
+    .modal-dots{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+    .modal-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:.2s}
+    .modal-dot.active{background:white;transform:scale(1.3)}
+  .nav-profile-icon{width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;letter-spacing:.5px;box-shadow:0 2px 8px rgba(211,17,72,.35);transition:.2s}
+    .nav-profile-icon:hover{background:var(--primary-dark,#a50d38);box-shadow:0 4px 16px rgba(211,17,72,.45)}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="buy.html" class="navbar-brand">PROPERTY<span>HUB</span></a>
+  <div class="navbar-links">
+    <a href="buy.html" class="active">Properties</a>
+    <a href="prediction.html">Price Predictor</a>
+    <a href="profile.html" class="nav-profile-icon" id="navProfileIcon" title="My Profile">P</a>
+    <a href="login.html" class="btn-outline">Logout</a>
+  </div>
+</nav>
+
+<div class="breadcrumb" id="breadcrumb">
+  <a href="buy.html">Home</a>
+  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  <a href="buy.html">Properties</a>
+  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  <strong id="breadTitle">Loading...</strong>
+</div>
+
+<div id="detailsMount"></div>
+
+<div class="recs-section" id="recsSection" style="display:none">
+  <div class="recs-inner">
+    <div class="recs-header">
+      <div>
+        <div class="recs-title">Recommended For You</div>
+        <div class="recs-subtitle">Personalised by our ML engine — based on this property &amp; your browsing history</div>
+      </div>
+      <div class="ai-badge"><div class="ai-dot"></div>ML Powered</div>
+    </div>
+    <div class="signal-bar" id="signalBar"><span class="signal-label">Matched on:</span></div>
+    <div class="ai-thinking" id="aiThinking">
+      <div class="thinking-dots"><span></span><span></span><span></span></div>
+      <div class="thinking-text">Analysing your preferences — <strong>finding your best matches…</strong></div>
+    </div>
+    <div class="recs-grid" id="recsGrid"></div>
+  </div>
+</div>
+
+<footer style="background:var(--dark);color:rgba(255,255,255,.5);text-align:center;padding:28px;font-size:.85rem">
+  &copy; 2025 <span style="color:var(--primary)">PropertyHUB</span> — Egypt's Smart Property Platform
+</footer>
+
+<div class="image-modal" id="imageModal">
+  <div class="image-modal-inner">
+    <span class="image-modal-close" id="closeModal">&times;</span>
+    <button class="modal-nav modal-prev" id="modalPrev">&#8249;</button>
+    <img id="modalImg" src="" alt="">
+    <button class="modal-nav modal-next" id="modalNext">&#8250;</button>
+    <div class="modal-dots" id="modalDots"></div>
+    <div class="modal-counter" id="modalCounter"></div>
+  </div>
+</div>
+
+<script>
+const BASE_URL = 'http://127.0.0.1:8000';
+const AGENT_PHONE = '201120577817';
+let currentImages = [], modalIndex = 0;
+
+function getToken() { return localStorage.getItem('token') || ''; }
+function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }; }
+function getPropertyId() {
+  const fromUrl = new URLSearchParams(location.search).get('id');
+  if (fromUrl) return parseInt(fromUrl);
+  return parseInt(localStorage.getItem('property_id') || '0');
+}
+function fixImage(imgString) {
+  if (!imgString) return 'https://placehold.co/900x500?text=No+Image';
+  try {
+    let cleaned = imgString.toString().replace('[','').replace(']','').replaceAll('"','').replaceAll("'",'').trim();
+    return cleaned.split(',')[0].trim() || 'https://placehold.co/900x500?text=No+Image';
+  } catch { return 'https://placehold.co/900x500?text=No+Image'; }
+}
+
+function trackAction(id, action) {
+  const token = getToken();
+  if (!token || !id) return;
+  // ✅ الـ backend هو الضامن الوحيد — INSERT IGNORE يمنع أي تكرار
+  fetch(`${BASE_URL}/ml/track`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ property_id: parseInt(id), action })
+  }).catch(() => {});
+
+  let h = JSON.parse(localStorage.getItem('phub_history') || '[]');
+  h = h.filter(x => x !== id); h.unshift(id);
+  localStorage.setItem('phub_history', JSON.stringify(h.slice(0, 30)));
+  localStorage.setItem('property_id', id);
+}
+
+/* ── MODAL ── */
+function openImage(index) {
+  if (!currentImages.length) return;
+  modalIndex = index; updateModal();
+  document.getElementById('imageModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function updateModal() {
+  const img = document.getElementById('modalImg');
+  const counter = document.getElementById('modalCounter');
+  const dots = document.getElementById('modalDots');
+  img.style.opacity = '0';
+  setTimeout(() => { img.src = currentImages[modalIndex] || 'https://placehold.co/900x500?text=No+Image'; img.style.opacity = '1'; }, 100);
+  counter.textContent = (modalIndex + 1) + ' / ' + currentImages.length;
+  const dotsToShow = Math.min(currentImages.length, 8);
+  dots.innerHTML = '';
+  for (let i = 0; i < dotsToShow; i++) {
+    const d = document.createElement('div');
+    d.className = 'modal-dot' + (i === modalIndex ? ' active' : '');
+    d.onclick = () => { modalIndex = i; updateModal(); };
+    dots.appendChild(d);
+  }
+  document.getElementById('modalPrev').style.display = currentImages.length <= 1 ? 'none' : '';
+  document.getElementById('modalNext').style.display = currentImages.length <= 1 ? 'none' : '';
+  dots.style.display = currentImages.length <= 1 ? 'none' : '';
+}
+function closeModal() { document.getElementById('imageModal').classList.remove('active'); document.body.style.overflow = ''; }
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('closeModal').onclick = closeModal;
+  document.getElementById('imageModal').onclick = (e) => { if (e.target.id === 'imageModal') closeModal(); };
+  document.getElementById('modalPrev').onclick = (e) => { e.stopPropagation(); modalIndex = (modalIndex - 1 + currentImages.length) % currentImages.length; updateModal(); };
+  document.getElementById('modalNext').onclick = (e) => { e.stopPropagation(); modalIndex = (modalIndex + 1) % currentImages.length; updateModal(); };
+  document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('imageModal').classList.contains('active')) return;
+    if (e.key === 'ArrowRight') { modalIndex = (modalIndex + 1) % currentImages.length; updateModal(); }
+    if (e.key === 'ArrowLeft')  { modalIndex = (modalIndex - 1 + currentImages.length) % currentImages.length; updateModal(); }
+    if (e.key === 'Escape') closeModal();
+  });
+});
+
+/* ── FETCH ── */
+async function fetchProperty(id) {
+  const res = await fetch(`${BASE_URL}/properties/${id}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+  if (!res.ok) throw new Error('Failed to fetch property');
+  return await res.json();
+}
+
+/* ── GALLERY ── */
+function buildGallery(images, isSale) {
+  const count = images.length;
+  const badge = `<span class="gallery-badge">${isSale ? 'For Sale' : 'For Rent'}</span>`;
+  const thumb = (idx, label = '') => `
+    <div class="g-thumb" onclick="openImage(${idx})">
+      <img src="${images[idx] || 'https://placehold.co/900x500?text=No+Image'}" alt="" onerror="this.src='https://placehold.co/900x500?text=No+Image'">
+      ${label ? `<div class="gallery-overlay"><span>${label}</span></div>` : ''}
+    </div>`;
+  if (count === 0) return `<div class="gallery-wrapper gallery-1">${badge}<div class="g-thumb" onclick="openImage(0)"><img src="https://placehold.co/900x500?text=No+Image" alt=""></div></div>`;
+  if (count === 1) return `<div class="gallery-wrapper gallery-1">${badge}${thumb(0)}</div>`;
+  if (count === 2) return `<div class="gallery-wrapper gallery-2">${badge}${thumb(0)}${thumb(1)}</div>`;
+  if (count === 3) return `<div class="gallery-wrapper gallery-3">${badge}<div class="g-thumb g-main" onclick="openImage(0)"><img src="${images[0]}" alt="" onerror="this.src='https://placehold.co/900x500?text=No+Image'"></div>${thumb(1,'Interior')}${thumb(2,'View')}</div>`;
+  const remaining = count - 3;
+  const lastTile = remaining > 0
+    ? `<div class="g-thumb" style="position:relative" onclick="openImage(3)"><img src="${images[3]}" alt="" onerror="this.src='https://placehold.co/900x500?text=No+Image'"><div class="g-more-badge"><span>+${remaining} Photos</span></div></div>`
+    : thumb(3);
+  return `<div class="gallery-wrapper gallery-4">${badge}<div class="g-thumb g-main" onclick="openImage(0)"><img src="${images[0]}" alt="" onerror="this.src='https://placehold.co/900x500?text=No+Image'"></div>${thumb(1,'Interior')}${lastTile}</div>`;
+}
+
+/* ── RENDER DETAILS ── */
+function renderDetails(p) {
+  window.propId = p.property_id || p.id;
+  document.getElementById('breadTitle').textContent = (p.title || 'Property') + ' – ' + (p.area || p.city || '');
+  document.title = (p.title || 'Property') + ' – PropertyHUB';
+  currentImages = p.all_image_url
+    ? p.all_image_url.replace('[','').replace(']','').replaceAll('"','').replaceAll("'",'').split(',').map(i=>i.trim()).filter(Boolean)
+    : [];
+  const isSale = (p.offering_type || '').toLowerCase() === 'sale';
+  const priceFormatted = Number(p.price || 0).toLocaleString() + ' EGP' + (isSale ? '' : '/mo');
+
+  // property_type badge color
+  const typeBg = '#f3e8ff', typeColor = '#6b21a8';
+  // offering_type badge
+  const offerBg = isSale ? '#fde8ef' : '#e8f4fd';
+  const offerColor = isSale ? 'var(--primary)' : '#1a6fa3';
+  const offerLabel = isSale ? 'For Sale' : 'For Rent';
+
+  document.getElementById('detailsMount').innerHTML = `
+  <div class="details-container">
+    ${buildGallery(currentImages, isSale)}
+    <div class="content-grid">
+      <div>
+        <div class="prop-header">
+          <h1>${p.title || 'Property'}</h1>
+          <div class="prop-meta">
+            <div class="location-tag">
+              <svg width="16" height="16" fill="none" stroke="#D31148" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ${p.location_full || p.area || ''}${(!p.location_full && p.area && p.city) ? ', ' + p.city : ''}
+            </div>
+            <span style="color:var(--border)">|</span>
+            <span style="font-size:.85rem;color:var(--mid)">· ID #PRH-${String(p.property_id || p.id || '0').padStart(4,'0')}</span>
+          </div>
+        </div>
+        <div class="prop-stats">
+          <div class="stat-item"><div class="val">${p.bedrooms ?? '–'}</div><div class="lbl">Bedrooms</div></div>
+          <div class="stat-item"><div class="val">${p.bathrooms ?? '–'}</div><div class="lbl">Bathrooms</div></div>
+          <div class="stat-item"><div class="val">${p.area_sqm ? p.area_sqm + ' m²' : '–'}</div><div class="lbl">Area</div></div>
+          ${p.property_type ? `<div class="stat-item"><div class="val" style="font-size:.95rem;">${p.property_type}</div><div class="lbl">Type</div></div>` : ''}
+          ${p.offering_type ? `<div class="stat-item"><div class="val" style="font-size:.95rem;">${isSale ? 'For Sale' : 'For Rent'}</div><div class="lbl">Offering</div></div>` : ''}
+        </div>
+        <div class="sec-title">About This Property</div>
+        <p class="description">${p.description || p.desc || 'No description available.'}</p>
+        <div class="sec-title">Features &amp; Amenities</div>
+        <div class="features-grid">${buildFeatures(p)}</div>
+        ${p.latitude && p.longitude ? `
+        <div class="map-section">
+          <div class="sec-title">Location</div>
+          <div class="map-frame">
+            <iframe src="https://maps.google.com/maps?q=${p.latitude},${p.longitude}&z=15&output=embed" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+          <a href="https://www.google.com/maps?q=${p.latitude},${p.longitude}" target="_blank" class="map-open-btn" onclick="trackAction(propId,'click')">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Open in Google Maps
+          </a>
+        </div>` : ''}
+      </div>
+      <div>
+        <div class="price-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div class="price-val">${priceFormatted}</div>
+            <button id="favBtn" onclick="toggleFavorite(propId)"
+              style="width:42px;height:42px;border:1.5px solid var(--border);border-radius:50%;background:white;font-size:18px;cursor:pointer;transition:.2s;flex-shrink:0">🤍</button>
+          </div>
+          <div class="price-note" style="margin-bottom:20px">Negotiable · Owner verified</div>
+          <div class="agent-row">
+            <div class="agent-avatar">AF</div>
+            <div class="agent-info">
+              <div class="name">Ahmed Farag</div>
+              <div class="role">PropertyHUB Verified Agent</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:.82rem;color:var(--mid);display:flex;align-items:center;gap:6px;">
+            📱 <a href="tel:+${AGENT_PHONE}" style="color:var(--primary);font-weight:600;text-decoration:none;">+${AGENT_PHONE}</a>
+          </div>
+          <div class="agent-actions">
+            <a href="tel:+${AGENT_PHONE}" class="agent-btn" onclick="trackAction(propId,'contact')">📞 Call</a>
+            <a href="https://wa.me/${AGENT_PHONE}" target="_blank" class="agent-btn" onclick="trackAction(propId,'contact')">💬 WhatsApp</a>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildFeatures(p) {
+  if (!p.amenities) return `<div class="feature-item"><span class="ico">ℹ️</span>No amenities available</div>`;
+  let raw = p.amenities;
+  // تنظيف الـ [], "", ''
+  if (typeof raw === 'string') {
+    raw = raw.replace(/[\[\]"']/g, '').trim();
+  }
+  let arr = typeof raw === 'string' ? raw.split(',').map(x=>x.trim()).filter(Boolean) : (Array.isArray(raw) ? raw.map(x=>String(x).replace(/[\[\]"']/g,'').trim()).filter(Boolean) : []);
+  if (!arr.length) return `<div class="feature-item"><span class="ico">ℹ️</span>No amenities available</div>`;
+  return arr.map(f => {
+    const fl = f.toLowerCase();
+    let icon = '✔️';
+    if (fl.includes('pool')) icon='🏊'; else if (fl.includes('parking')) icon='🅿️';
+    else if (fl.includes('sea')) icon='🌊'; else if (fl.includes('garden')) icon='🌿';
+    else if (fl.includes('security')) icon='🔒'; else if (fl.includes('gym')) icon='🏋️';
+    else if (fl.includes('elevator')) icon='🛗'; else if (fl.includes('ac')) icon='❄️';
+    else if (fl.includes('furnished')) icon='🛋️'; else if (fl.includes('wifi')) icon='📶';
+    return `<div class="feature-item"><span class="ico">${icon}</span>${f}</div>`;
+  }).join('');
+}
+
+/* ── RECOMMENDATIONS ── */
+async function renderRecs(current) {
+  const bar = document.getElementById('signalBar');
+  const grid = document.getElementById('recsGrid');
+  const thinking = document.getElementById('aiThinking');
+
+  [
+    { label: '📍 ' + (current.area || current.city || ''), cls: 's-loc' },
+    { label: '💰 ±30% of ' + Number(current.price||0).toLocaleString() + ' EGP', cls: 's-price' },
+    { label: (current.offering_type||'').toLowerCase()==='sale' ? '🏠 For Sale' : '🔑 For Rent', cls: 's-type' },
+    { label: '🛏️ ' + (current.bedrooms||0) + ' beds (±1)', cls: 's-rooms' },
+  ].forEach(t => {
+    const s = document.createElement('span');
+    s.className = 'signal-tag ' + t.cls;
+    s.textContent = t.label;
+    bar.appendChild(s);
+  });
+
+  try {
+    const currentId = current.property_id || current.id;
+    const url = `${BASE_URL}/ml/recommend?property_id=${currentId}&top_n=10`;
+    const res = await fetch(url, { headers: getHeaders() });
+    if (!res.ok) throw new Error('recommend failed');
+
+    const data = await res.json();
+    console.log('🎯 type:', data.type, '| interactions:', data.interaction_count, '| results:', data.results?.length);
+
+    // API بيرجع { type, user_id, interaction_count, results: [...] }
+    let recs = Array.isArray(data?.results) ? data.results : [];
+
+    recs = recs.map(r => {
+      const prop = r.property || r;
+      prop._score = r.score ?? r.content_score ?? r.final_score ?? 0;
+      return prop;
+    }).filter(p => (p.property_id || p.id) && (p.property_id || p.id) !== currentId);
+
+    const subtitle = document.querySelector('.recs-subtitle');
+    if (subtitle) {
+      const t = data.type || '';
+      if (t === 'full_hybrid')       subtitle.textContent = 'Personalised by our ML engine — based on your browsing history';
+      else if (t === 'content_only') subtitle.textContent = 'Based on your recent views';
+      else                           subtitle.textContent = 'Similar properties — based on this property features';
+    }
+
+    if (thinking) thinking.style.display = 'none';
+
+    if (!recs.length) {
+      grid.innerHTML = '<p style="color:var(--mid);font-size:.9rem">No recommendations available.</p>';
+      grid.classList.add('visible');
+      return;
+    }
+
+    grid.innerHTML = recs.map(p => {
+      const pid    = p.property_id || p.id;
+      const img    = fixImage(p.all_image_url || p.image_urls);
+      const isSale = (p.offering_type || '').toLowerCase() === 'sale';
+      const price  = Number(p.price||0).toLocaleString() + ' EGP' + (isSale ? '' : '/mo');
+      const pct    = Math.min(99, Math.round((p._score || 0) * 100));
+      const reasons = [];
+      if (p.city === current.city) reasons.push({ label: '📍 ' + p.city, cls: 'rt-loc' });
+      if (p.offering_type === current.offering_type) reasons.push({ label: isSale ? '🏠 For Sale' : '🔑 For Rent', cls: 'rt-type' });
+      if (p.bedrooms === current.bedrooms) reasons.push({ label: '🛏️ ' + p.bedrooms + ' beds', cls: 'rt-rooms' });
+      const ratio = current.price > 0 ? p.price / current.price : 1;
+      if (ratio >= 0.7 && ratio <= 1.3) reasons.push({ label: '💰 Similar price', cls: 'rt-price' });
+      return `
+        <div class="rec-card" onclick="goTo(${pid})">
+          <button class="rec-fav" onclick="event.stopPropagation();var isF=this.textContent==='❤️';this.textContent=isF?'🤍':'❤️';if(!isF)trackAction(${pid},'favorite')">🤍</button>
+          <div class="rec-score"><span class="rec-star">★</span>${pct}% match</div>
+          <img src="${img}" alt="${p.title||'Property'}" loading="lazy" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+          <div class="rec-body">
+            <span class="rec-badge ${isSale?'rb-sale':'rb-rent'}">${isSale?'For Sale':'For Rent'}</span>
+            <h3>${p.title||'Property'}</h3>
+            <div class="rec-price">${price}</div>
+            <div class="rec-loc">📍 ${p.area||''}, ${p.city||''} · ${p.bedrooms||0} beds · ${p.area_sqm||0} m²</div>
+            <div class="rec-tags">${reasons.slice(0,3).map(r=>`<span class="rec-tag ${r.cls}">${r.label}</span>`).join('')}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    grid.classList.add('visible');
+
+  } catch (err) {
+    console.warn('ML recommend failed:', err);
+    if (thinking) thinking.style.display = 'none';
+    grid.innerHTML = '<p style="color:var(--mid);font-size:.9rem">Could not load recommendations.</p>';
+    grid.classList.add('visible');
+  }
+}
+
+function goTo(id) {
+  // click بتتسجل بس لما اليوزر يضغط المابة — مش هنا
+  location.href = 'property-details.html?id=' + id;
+}
+
+function getFavKey(id) {
+  const uid = localStorage.getItem('user_id') || 'anon';
+  return `fav_${uid}_${id}`;
+}
+
+function toggleFavorite(id) {
+  const btn = document.getElementById('favBtn');
+  if (!btn) return;
+  const favKey = getFavKey(id);
+  const isFav  = localStorage.getItem(favKey) === '1';
+
+  if (isFav) {
+    localStorage.removeItem(favKey);
+    btn.textContent       = '🤍';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.background  = 'white';
+    trackAction(id, 'unfavorite');
+  } else {
+    localStorage.setItem(favKey, '1');
+    btn.textContent       = '❤️';
+    btn.style.borderColor = 'var(--primary)';
+    btn.style.background  = 'var(--primary-light,#fde8ef)';
+    trackAction(id, 'favorite');
+  }
+}
+
+function loadFavoriteState(id) {
+  const btn = document.getElementById('favBtn');
+  if (!btn) return;
+  if (localStorage.getItem(getFavKey(id)) === '1') {
+    btn.textContent       = '❤️';
+    btn.style.borderColor = 'var(--primary)';
+    btn.style.background  = 'var(--primary-light,#fde8ef)';
+  }
+}
+
+/* ── INIT ── */
+async function init() {
+  const id = getPropertyId();
+  if (!id) {
+    document.getElementById('detailsMount').innerHTML = `
+      <div class="error-box"><h2>No property selected</h2><p>Please go back and choose a property.</p><a href="buy.html">← Back to listings</a></div>`;
+    return;
+  }
+  document.getElementById('detailsMount').innerHTML = `
+    <div class="page-loader"><div class="spinner"></div><span>Loading property…</span></div>`;
+  try {
+    const res  = await fetchProperty(id);
+    const prop = res.property || res;
+
+    // ✅ track view — الـ backend هو اللي يمنع التكرار بـ INSERT IGNORE
+    //    الـ frontend مش بيعمل أي localStorage check للـ view
+    if (getToken()) {
+      fetch(`${BASE_URL}/ml/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ property_id: parseInt(id), action: 'view' })
+      }).catch(() => {});
+    }
+
+    renderDetails(prop);
+    loadFavoriteState(id);
+    document.getElementById('recsSection').style.display = 'block';
+    renderRecs(prop);
+  } catch (err) {
+    console.error(err);
+    document.getElementById('detailsMount').innerHTML = `
+      <div class="error-box"><h2>Error loading property</h2><p>${err.message}</p><a href="buy.html">← Back</a></div>`;
+  }
+}
+
+init();
+</script>
+
+<script>
+(function(){
+  var t = localStorage.getItem('token');
+  if (!t) return;
+  fetch('http://127.0.0.1:8000/auth/me',{headers:{'Authorization':'Bearer '+t}})
+    .then(function(r){return r.ok?r.json():null})
+    .then(function(u){
+      if (!u) return;
+      var el = document.getElementById('navProfileIcon');
+      if (el) el.textContent = ((u.first_name||'?')[0]+(u.last_name||'?')[0]).toUpperCase();
+    }).catch(function(){});
+})();
+</script>
+</body>
+</html>

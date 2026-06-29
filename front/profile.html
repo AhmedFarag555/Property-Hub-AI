@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile – PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#D31148;--primary-dark:#a50d38;--primary-light:#fde8ef;--dark:#1a1816;--dark-2:#2c2a26;--mid:#6b6967;--light:#f5f4f2;--white:#fff;--border:#e5e3e0;--card-shadow:0 4px 24px rgba(0,0,0,.08);--radius:16px;}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'DM Sans',sans-serif;background:var(--light);color:var(--dark-2)}
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+    .navbar-brand{font-family:'Playfair Display',serif;font-weight:900;font-size:1.4rem;color:var(--dark);text-decoration:none}
+    .navbar-brand span{color:var(--primary)}
+    .navbar-links{display:flex;gap:32px;align-items:center}
+    .navbar-links a{text-decoration:none;color:var(--mid);font-size:.9rem;font-weight:500}
+    .navbar-links a:hover,.navbar-links a.active{color:var(--primary)}
+    .btn-outline{background:transparent;color:var(--dark-2);border:1.5px solid var(--border);padding:10px 24px;border-radius:50px;font-size:.875rem;font-weight:600;text-decoration:none;display:inline-block}
+
+    .page-wrap{max-width:1100px;margin:0 auto;padding:40px 24px}
+
+    /* PROFILE HEADER */
+    .profile-header{background:var(--white);border-radius:var(--radius);padding:36px;box-shadow:var(--card-shadow);border:1px solid var(--border);display:flex;align-items:center;gap:28px;margin-bottom:28px}
+    .profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900;color:var(--primary);flex-shrink:0}
+    .profile-name{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--dark);margin-bottom:4px}
+    .profile-email{color:var(--mid);font-size:.9rem;margin-bottom:8px}
+    .profile-badge{display:inline-block;padding:4px 12px;border-radius:50px;font-size:.75rem;font-weight:700}
+    .badge-admin{background:#fef3c7;color:#92400e}
+    .badge-user{background:#e8f4fd;color:#1a6fa3}
+
+    /* STATS MINI */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    .stat-card{background:var(--white);border-radius:var(--radius);padding:24px;text-align:center;box-shadow:var(--card-shadow);border:1px solid var(--border)}
+    .stat-card .num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--primary)}
+    .stat-card .lbl{font-size:.82rem;color:var(--mid);margin-top:4px}
+
+    /* SECTION TITLE */
+    .sec-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--dark);margin-bottom:16px}
+
+    /* FAVORITES */
+    .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-bottom:36px}
+    .fav-card{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--card-shadow);border:1px solid var(--border);cursor:pointer;transition:.2s}
+    .fav-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.12)}
+    .fav-card img{width:100%;height:150px;object-fit:cover}
+    .fav-body{padding:14px}
+    .fav-body h4{font-family:'Playfair Display',serif;font-size:.95rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fav-price{color:var(--primary);font-weight:700;font-size:.95rem;margin-bottom:3px}
+    .fav-loc{color:var(--mid);font-size:.78rem}
+    .fav-badge{display:inline-block;padding:2px 8px;border-radius:50px;font-size:.68rem;font-weight:700;margin-bottom:6px}
+    .fb-sale{background:var(--primary-light);color:var(--primary)}
+    .fb-rent{background:#e8f4fd;color:#1a6fa3}
+
+    /* BEHAVIOR TABLE */
+    .table-wrap{background:var(--white);border-radius:var(--radius);box-shadow:var(--card-shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:40px}
+    .behavior-table{width:100%;border-collapse:collapse;font-size:.83rem}
+    .behavior-table th{background:var(--dark);color:white;padding:12px 16px;text-align:left;font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+    .behavior-table td{padding:11px 16px;border-bottom:1px solid var(--border);color:var(--dark-2)}
+    .behavior-table tr:last-child td{border-bottom:none}
+    .behavior-table tr:hover td{background:#fafafa}
+    .score-bar{display:flex;align-items:center;gap:8px}
+    .score-fill{height:6px;border-radius:3px;background:var(--primary);min-width:4px}
+    .action-tag{padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700}
+    .at-view{background:#e8f4fd;color:#1a6fa3}
+    .at-click{background:#fef3c7;color:#92400e}
+    .at-favorite{background:#fde8ef;color:var(--primary)}
+    .at-contact{background:#e8fdf0;color:#166534}
+
+    .empty-state{text-align:center;padding:60px 20px;color:var(--mid)}
+    .empty-state .ico{font-size:3rem;margin-bottom:12px}
+    .empty-state p{font-size:.95rem}
+
+    .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:60px auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    @media(max-width:700px){
+      .profile-header{flex-direction:column;text-align:center}
+      .stats-row{grid-template-columns:1fr 1fr}
+      .navbar{padding:16px 20px}
+      .page-wrap{padding:24px 16px}
+    }
+  
+    /* ── RECOMMENDATIONS ── */
+    .rec-section{margin-top:32px}
+    .rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-top:16px}
+    .rec-card{background:var(--card,#fff);border:1px solid var(--border,#eee);border-radius:14px;overflow:hidden;cursor:pointer;transition:.2s;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .rec-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.12)}
+    .rec-card img{width:100%;height:160px;object-fit:cover;display:block}
+    .rec-card-body{padding:12px 14px}
+    .rec-card-price{font-weight:700;font-size:1rem;color:var(--primary,#D31148);margin-bottom:4px}
+    .rec-card-loc{font-size:.82rem;color:var(--mid,#888);margin-bottom:6px}
+    .rec-card-meta{font-size:.78rem;color:var(--mid,#888);display:flex;gap:8px;flex-wrap:wrap}
+    .rec-badge{display:inline-block;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:20px;margin-bottom:6px}
+    .rec-badge.sale{background:#fde8ef;color:#D31148}
+    .rec-badge.rent{background:#e8f4fd;color:#1a6fa3}
+    .rec-strategy{font-size:.78rem;color:var(--mid,#999);margin-bottom:12px}
+    .rec-empty{color:var(--mid,#aaa);font-size:.9rem;padding:24px 0;text-align:center}
+    @media(max-width:600px){.rec-grid{grid-template-columns:1fr 1fr}}
+  
+    /* ── EDIT MODAL ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:#fff;border-radius:18px;padding:32px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative}
+    .modal-title{font-size:1.15rem;font-weight:700;margin-bottom:20px;color:var(--dark,#1a1a2e)}
+    .modal-close{position:absolute;top:16px;right:18px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--mid,#888)}
+    .modal-close:hover{color:var(--primary,#D31148)}
+    .field-group{margin-bottom:14px}
+    .field-group label{display:block;font-size:.8rem;font-weight:600;color:var(--mid,#666);margin-bottom:5px}
+    .field-group input{width:100%;padding:10px 13px;border:1.5px solid var(--border,#e0e0e0);border-radius:9px;font-size:.92rem;outline:none;box-sizing:border-box;transition:.2s}
+    .field-group input:focus{border-color:var(--primary,#D31148)}
+    .modal-divider{border:none;border-top:1px solid var(--border,#eee);margin:16px 0}
+    .modal-save{width:100%;padding:11px;background:var(--primary,#D31148);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:6px;transition:.2s}
+    .modal-save:hover{background:#a50d38}
+    .modal-save:disabled{background:#ccc;cursor:not-allowed}
+    .modal-msg{font-size:.85rem;text-align:center;margin-top:10px;min-height:18px}
+    .modal-msg.ok{color:#16a34a}
+    .modal-msg.err{color:#D31148}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="buy.html" class="navbar-brand">PROPERTY<span>HUB</span></a>
+  <div class="navbar-links">
+    <a href="buy.html">Properties</a>
+    <a href="prediction.html">Price Predictor</a>
+    <a href="profile.html" class="active">Profile</a>
+    <a href="login.html" class="btn-outline" onclick="logout()">Logout</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div id="profileMount"><div class="spinner"></div></div>
+</div>
+
+<script>
+const BASE_URL = 'http://127.0.0.1:8000';
+
+function getToken()   { return localStorage.getItem('token') || ''; }
+function getHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }; }
+
+function logout() {
+  localStorage.removeItem('token');
+  window.location.href = 'login.html';
+}
+
+function fixImage(raw) {
+  if (!raw) return 'https://placehold.co/600x300?text=No+Image';
+  try {
+    return raw.toString().replace(/[\[\]"']/g,'').trim().split(',')[0].trim()
+           || 'https://placehold.co/600x300?text=No+Image';
+  } catch { return 'https://placehold.co/600x300?text=No+Image'; }
+}
+
+function getFavoriteIds() {
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('fav_') && localStorage.getItem(k) === '1');
+  return keys.map(k => parseInt(k.replace('fav_', ''))).filter(Boolean);
+}
+
+
+async function loadRecommendations() {
+  const token = getToken();
+  if (!token) return;
+
+  const container = document.getElementById('recGrid');
+  const stratEl   = document.getElementById('recStrategy');
+  if (!container) return;
+
+  container.innerHTML = '<div class="rec-empty">⏳ Loading recommendations…</div>';
+
+  try {
+    const res  = await fetch(`${BASE_URL}/ml/recommend?top_n=8`, { headers: getHeaders() });
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    const recs = data.results || [];
+
+    if (stratEl) {
+      const stratMap = {
+        'hybrid':                  '🤖 Hybrid — based on your history',
+        'content-based':           '🏠 Content-based recommendations',
+        'content-based-cold-start':'🏠 Based on similar properties',
+        'popular':                 '🔥 Popular properties',
+        'unknown':                 '✨ Recommended for you',
+      };
+      stratEl.textContent = stratMap[data.type] || '✨ Recommended for you';
+    }
+
+    if (!recs.length) {
+      container.innerHTML = '<div class="rec-empty">Browse some properties first to get personalized recommendations 🏠</div>';
+      return;
+    }
+
+    container.innerHTML = recs.map(p => {
+      const img    = fixImage(p.all_image_url || p.image_url || '');
+      const isSale = (p.offering_type || '').toLowerCase() === 'sale';
+      const pid    = p.property_id || p.id;
+      return `
+        <div class="rec-card" onclick="window.location.href='property-details.html?id=${pid}'">
+          <img src="${img}" alt="${p.title || 'Property'}"
+               onerror="this.src='https://placehold.co/400x200?text=No+Image'" loading="lazy">
+          <div class="rec-card-body">
+            <span class="rec-badge ${isSale ? 'sale' : 'rent'}">${isSale ? 'For Sale' : 'For Rent'}</span>
+            <div class="rec-card-price">${Number(p.price || 0).toLocaleString()} EGP</div>
+            <div class="rec-card-loc">📍 ${p.area || ''}${p.area && p.city ? ', ' : ''}${p.city || 'Egypt'}</div>
+            <div class="rec-card-meta">
+              <span>🛏 ${p.bedrooms || 0}</span>
+              <span>🚿 ${p.bathrooms || 0}</span>
+              <span>📐 ${p.area_sqm || 0} m²</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch {
+    container.innerHTML = '<div class="rec-empty">Could not load recommendations.</div>';
+  }
+}
+
+async function loadProfile() {
+  const token = getToken();
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  const mount = document.getElementById('profileMount');
+
+  try {
+    // جيب بيانات اليوزر
+    const meRes = await fetch(`${BASE_URL}/auth/me`, { headers: getHeaders() });
+    if (!meRes.ok) { window.location.href = 'login.html'; return; }
+    const user = await meRes.json();
+
+    // ✅ 1. جيب interactions بتاعت اليوزر ده بس من /profile/interactions
+    const intRes  = await fetch(`${BASE_URL}/profile/interactions`, { headers: getHeaders() });
+    const intData = intRes.ok ? await intRes.json() : [];
+
+    // ✅ 2. احسب stats من interactions
+    const views    = intData.filter(r => r.action === 'view').length;
+    const favs     = intData.filter(r => r.action === 'favorite').length;
+    const clicks   = intData.filter(r => r.action === 'click').length;
+    const contacts = intData.filter(r => r.action === 'contact').length;
+
+    // ✅ 3. جيب favorites للـ user ده بس من interactions (action=favorite)
+    const favIds = [...new Set(intData.filter(r => r.action === 'favorite').map(r => r.property_id))];
+    let favProps = [];
+    if (favIds.length) {
+      const favRes = await Promise.all(
+        favIds.map(id => fetch(`${BASE_URL}/properties/${id}`, { headers: getHeaders() })
+          .then(r => r.ok ? r.json() : null).catch(() => null))
+      );
+      favProps = favRes.filter(Boolean);
+    }
+
+    // ✅ 4. جيب behavior data للـ dashboard table
+    const bhvRes  = await fetch(`${BASE_URL}/profile/behavior`, { headers: getHeaders() });
+    const bhvData = bhvRes.ok ? await bhvRes.json() : [];
+
+    const initials = ((user.first_name || '?')[0] + (user.last_name || '?')[0]).toUpperCase();
+
+    const recPlaceholder = `
+
+      <!-- RECOMMENDATIONS -->
+      <div class="rec-section">
+        <div class="sec-title">🤖 Recommended For You</div>
+        <div class="rec-strategy" id="recStrategy"></div>
+        <div class="rec-grid" id="recGrid">
+          <div class="rec-empty">Loading…</div>
+        </div>
+      </div>`;
+
+    window.__currentUser = user;  // ✅ للـ edit modal
+    mount.innerHTML = `
+      <!-- PROFILE HEADER -->
+      <div class="profile-header">
+        <div class="profile-avatar">${initials}</div>
+        <div style="flex:1">
+          <div class="profile-name">${user.first_name || ''} ${user.last_name || ''}</div>
+          <div class="profile-email">📧 ${user.email || ''}</div>
+          ${user.phone ? `<div style="font-size:.85rem;color:var(--mid,#888);margin-top:3px">📱 ${user.phone}</div>` : ''}
+          <span class="profile-badge ${user.is_admin ? 'badge-admin' : 'badge-user'}">
+            ${user.is_admin ? '👑 Admin' : '👤 Member'}
+          </span>
+        </div>
+        <button onclick="openEditModal(window.__currentUser)"
+          style="background:var(--primary,#D31148);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;height:fit-content">
+          ✏️ Edit Profile
+        </button>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="num">${views}</div>
+          <div class="lbl">👁️ Views</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${favs}</div>
+          <div class="lbl">❤️ Favorites</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${clicks}</div>
+          <div class="lbl">🗺️ Map Clicks</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${contacts}</div>
+          <div class="lbl">📞 Contacts</div>
+        </div>
+      </div>
+
+      <!-- FAVORITES -->
+      <div class="sec-title">❤️ Saved Properties</div>
+      ${favProps.length ? `
+        <div class="fav-grid">
+          ${favProps.map(p => {
+            const prop   = p.property || p;
+            const isSale = (prop.offering_type || '').toLowerCase() === 'sale';
+            const price  = Number(prop.price || 0).toLocaleString() + ' EGP' + (isSale ? '' : '/mo');
+            const img    = fixImage(prop.all_image_url);
+            const pid    = prop.property_id || prop.id;
+            return `
+              <div class="fav-card" onclick="window.location.href='property-details.html?id=${pid}'">
+                <img src="${img}" alt="${prop.title||''}" onerror="this.src='https://placehold.co/600x300?text=No+Image'" loading="lazy">
+                <div class="fav-body">
+                  <span class="fav-badge ${isSale?'fb-sale':'fb-rent'}">${isSale?'For Sale':'For Rent'}</span>
+                  <h4 title="${prop.title||''}">${prop.title||'Property'}</h4>
+                  <div class="fav-price">${price}</div>
+                  <div class="fav-loc">📍 ${prop.location_full || prop.area || ''}, ${prop.city || ''}</div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      ` : `<div class="empty-state"><div class="ico">🤍</div><p>No saved properties yet.<br>Tap the heart on any property to save it.</p></div>`}
+
+      <!-- BEHAVIOR TABLE — أول 10 بس -->
+      <div class="sec-title">📊 Activity Dashboard</div>
+      ${bhvData.length ? (() => {
+        // ── جيب actions لكل property من intData ──────────────────────────────
+        const actMap = {};
+        intData.forEach(r => {
+          if (!actMap[r.property_id]) actMap[r.property_id] = {view:0,favorite:0,click:0,contact:0};
+          if (actMap[r.property_id][r.action] !== undefined) actMap[r.property_id][r.action]++;
+        });
+
+        const top10    = bhvData.slice(0, 10);
+        const maxScore = Math.max(...top10.map(x => x.interest_score || 0), 1);
+
+        return `
+        <div class="table-wrap">
+          <table class="behavior-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Property</th>
+                <th>City</th>
+                <th>Type</th>
+                <th>Offering</th>
+                <th>Price</th>
+                <th>👁️ Views</th>
+                <th>❤️ Favs</th>
+                <th>🗺️ Clicks</th>
+                <th>📞 Contact</th>
+                <th>Score</th>
+                <th>Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${top10.map((r, i) => {
+                const pct    = Math.min(80, Math.round(((r.interest_score || 0) / maxScore) * 80));
+                const isSale = (r.offering_type || '').toLowerCase() === 'sale';
+                const date   = r.last_seen ? new Date(r.last_seen).toLocaleDateString('en-EG') : '–';
+                const acts   = actMap[r.property_id] || {};
+                return `
+                  <tr onclick="window.location.href='property-details.html?id=${r.property_id}'" style="cursor:pointer">
+                    <td style="color:var(--mid)">${i + 1}</td>
+                    <td><strong>#${r.property_id}</strong></td>
+                    <td>${r.city || '–'}</td>
+                    <td>${r.property_type || '–'}</td>
+                    <td>${isSale ? '🏷️ Sale' : '🔑 Rent'}</td>
+                    <td>${Number(r.price || 0).toLocaleString()} EGP</td>
+                    <td style="text-align:center">${acts.view || 0}</td>
+                    <td style="text-align:center">${acts.favorite || 0}</td>
+                    <td style="text-align:center">${acts.click || 0}</td>
+                    <td style="text-align:center">${acts.contact || 0}</td>
+                    <td>
+                      <div class="score-bar">
+                        <div class="score-fill" style="width:${pct}px"></div>
+                        <span>${r.interest_score || 0}</span>
+                      </div>
+                    </td>
+                    <td style="color:var(--mid)">${date}</td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      })() : `<div class="empty-state"><div class="ico">📊</div><p>No activity recorded yet.</p></div>`}
+
+      ${recPlaceholder}
+    `;
+
+  } catch (err) {
+    console.error(err);
+    mount.innerHTML = `<div class="empty-state"><div class="ico">⚠️</div><p>Failed to load profile. Please try again.</p></div>`;
+  }
+}
+
+loadProfile().then(() => loadRecommendations());
+</script>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeEditModal()">✕</button>
+    <div class="modal-title">✏️ Edit Profile</div>
+
+    <div class="field-group">
+      <label>First Name</label>
+      <input id="ef_first" type="text" placeholder="First name">
+    </div>
+    <div class="field-group">
+      <label>Last Name</label>
+      <input id="ef_last" type="text" placeholder="Last name">
+    </div>
+    <div class="field-group">
+      <label>Email</label>
+      <input id="ef_email" type="email" placeholder="Email">
+    </div>
+    <div class="field-group">
+      <label>📱 Phone</label>
+      <input id="ef_phone" type="tel" placeholder="e.g. 01012345678">
+    </div>
+
+    <hr class="modal-divider">
+    <div class="field-group">
+      <label>New Password <span style="color:var(--mid);font-weight:400">(leave blank to keep current)</span></label>
+      <input id="ef_newpw" type="password" placeholder="New password (min 6 chars)">
+    </div>
+    <div class="field-group">
+      <label>Current Password <span style="color:var(--primary)">*required</span></label>
+      <input id="ef_curpw" type="password" placeholder="Enter current password to confirm">
+    </div>
+
+    <button class="modal-save" id="editSaveBtn" onclick="saveProfile()">Save Changes</button>
+    <div class="modal-msg" id="editMsg"></div>
+  </div>
+</div>
+
+<script>
+function openEditModal(user) {
+  document.getElementById('ef_first').value = user.first_name || '';
+  document.getElementById('ef_last').value  = user.last_name  || '';
+  document.getElementById('ef_email').value = user.email      || '';
+  document.getElementById('ef_phone').value = user.phone      || '';
+  document.getElementById('ef_newpw').value = '';
+  document.getElementById('ef_curpw').value = '';
+  document.getElementById('editMsg').textContent = '';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('open');
+}
+
+async function saveProfile() {
+  const btn = document.getElementById('editSaveBtn');
+  const msg = document.getElementById('editMsg');
+  msg.textContent = '';
+  msg.className   = 'modal-msg';
+
+  const curpw = document.getElementById('ef_curpw').value.trim();
+  if (!curpw) { msg.textContent = 'Current password is required'; msg.className='modal-msg err'; return; }
+
+  const payload = {
+    first_name:       document.getElementById('ef_first').value.trim()  || undefined,
+    last_name:        document.getElementById('ef_last').value.trim()   || undefined,
+    email:            document.getElementById('ef_email').value.trim()  || undefined,
+    phone:            document.getElementById('ef_phone').value.trim()  || undefined,
+    current_password: curpw,
+  };
+  const newpw = document.getElementById('ef_newpw').value.trim();
+  if (newpw) payload.new_password = newpw;
+
+  btn.disabled    = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const BASE = 'http://127.0.0.1:8000';
+    const token = localStorage.getItem('token');
+    const res  = await fetch(`${BASE}/auth/me`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body:    JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Update failed');
+
+    msg.textContent = '✅ Profile updated!';
+    msg.className   = 'modal-msg ok';
+    setTimeout(() => { closeEditModal(); loadProfile().then(() => loadRecommendations()); }, 1200);
+  } catch(e) {
+    msg.textContent = '❌ ' + e.message;
+    msg.className   = 'modal-msg err';
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Save Changes';
+  }
+}
+</script>
+</body>
+</html>

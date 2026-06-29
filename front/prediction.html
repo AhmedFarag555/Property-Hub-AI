@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Price Predictor – PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="image/logo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #D31148;
+      --primary-dark: #a50d38;
+      --dark: #1a1816;
+      --dark-2: #2c2a26;
+      --mid: #6b6967;
+      --light: #f5f4f2;
+      --white: #fff;
+      --border: #e5e3e0;
+      --card-shadow: 0 4px 24px rgba(0,0,0,.08);
+      --card-shadow-hover: 0 12px 40px rgba(0,0,0,.15);
+      --radius: 16px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--light); color:var(--dark-2); }
+
+    /* NAVBAR */
+    .navbar { display:flex; align-items:center; justify-content:space-between; padding:20px 48px; background:var(--white); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; }
+    .navbar-brand { font-family:'Playfair Display',serif; font-weight:900; font-size:1.4rem; color:var(--dark); text-decoration:none; }
+    .navbar-brand span { color:var(--primary); }
+    .navbar-links { display:flex; gap:32px; align-items:center; }
+    .navbar-links a { text-decoration:none; color:var(--mid); font-size:.9rem; font-weight:500; }
+    .navbar-links a:hover, .navbar-links a.active { color:var(--primary); }
+    .btn-outline { background:transparent; color:var(--dark-2); border:1.5px solid var(--border); padding:10px 24px; border-radius:50px; font-size:.875rem; font-weight:600; text-decoration:none; }
+
+    /* PAGE */
+    .page-wrap { max-width:780px; margin:0 auto; padding:48px 24px; }
+    .page-intro h1 { font-family:'Playfair Display',serif; font-size:2.2rem; font-weight:900; margin-bottom:10px; }
+    .page-intro h1 span { color:var(--primary); }
+    .page-intro p { color:var(--mid); font-size:.95rem; line-height:1.6; }
+
+    /* FORM BOX */
+    .prediction-box { background:var(--white); border-radius:var(--radius); padding:36px; box-shadow:var(--card-shadow); border:1px solid var(--border); margin-top:28px; }
+
+    .section-label { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--primary); margin:24px 0 12px; }
+    .section-label:first-child { margin-top:0; }
+
+    .inputs-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .inputs-grid.three { grid-template-columns:1fr 1fr 1fr; }
+    @media(max-width:580px) { .inputs-grid, .inputs-grid.three { grid-template-columns:1fr; } }
+    .full { grid-column:1/-1; }
+
+    .form-label { display:block; font-size:.75rem; font-weight:600; text-transform:uppercase; color:var(--mid); margin-bottom:6px; }
+    .form-control {
+      width:100%; padding:11px 14px; border:1.5px solid var(--border);
+      border-radius:10px; font-size:.93rem; background:var(--light);
+      font-family:'DM Sans',sans-serif; outline:none; transition:.2s;
+    }
+    .form-control:focus { border-color:var(--primary); background:#fff; }
+
+    /* AMENITIES */
+    .amenities-wrap { display:flex; flex-wrap:wrap; gap:8px; max-height:160px; overflow-y:auto; padding:4px 0; }
+    .am-chip {
+      padding:6px 14px; border-radius:50px; border:1.5px solid var(--border);
+      font-size:.8rem; font-weight:600; cursor:pointer; background:#fff;
+      transition:.18s; user-select:none; color:var(--dark-2);
+    }
+    .am-chip.selected { background:var(--primary); border-color:var(--primary); color:#fff; }
+    .am-loading { color:var(--mid); font-size:.85rem; }
+
+    /* BUTTON */
+    .predict-btn {
+      width:100%; margin-top:28px; padding:15px;
+      background:var(--primary); color:#fff; border:none;
+      border-radius:12px; font-weight:700; font-size:1rem;
+      cursor:pointer; transition:opacity .2s;
+    }
+    .predict-btn:disabled { opacity:.55; cursor:not-allowed; }
+
+    /* ERROR */
+    .error-msg { margin-top:14px; padding:13px 16px; background:#fff0f0; border:1px solid #f5c6cb; border-radius:10px; color:#c0392b; font-size:.88rem; display:none; }
+    .error-msg.show { display:block; }
+
+    /* RESULT */
+    .prediction-result { margin-top:24px; padding:28px 32px; background:linear-gradient(135deg,var(--dark),#3a1a28); border-radius:var(--radius); color:#fff; display:none; }
+    .prediction-result.show { display:block; }
+    .result-label { font-size:.82rem; opacity:.7; margin-bottom:4px; }
+    .result-price { font-size:2.2rem; font-weight:900; margin-bottom:12px; }
+    .result-tags { display:flex; gap:8px; flex-wrap:wrap; }
+    .result-tag { background:rgba(255,255,255,.15); padding:4px 12px; border-radius:50px; font-size:.75rem; }
+
+    /* RECOMMENDATIONS */
+    #recommendations { margin-top:36px; }
+    .rec-title { font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:18px; }
+    .properties-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
+
+    .property-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:var(--card-shadow); border:1px solid var(--border); transition:.25s; cursor:pointer; position:relative; }
+    .property-card:hover { transform:translateY(-4px); box-shadow:var(--card-shadow-hover); }
+    .property-card img { width:100%; height:200px; object-fit:cover; display:block; }
+    .match-badge { position:absolute; top:12px; left:12px; background:rgba(211,17,72,.9); color:#fff; padding:3px 10px; border-radius:50px; font-size:.72rem; font-weight:700; z-index:2; }
+    .fav-btn { position:absolute; top:12px; right:12px; width:34px; height:34px; border:none; border-radius:50%; background:rgba(255,255,255,.92); cursor:pointer; font-size:16px; z-index:2; }
+    .property-info { padding:18px; }
+    .badge { display:inline-block; padding:4px 10px; border-radius:50px; font-size:.72rem; font-weight:700; margin-bottom:10px; }
+    .badge-sale { background:#fde8ef; color:var(--primary); }
+    .badge-rent { background:#e8f4fd; color:#1a6fa3; }
+    .property-info h3 { font-family:'Playfair Display',serif; font-size:1rem; margin-bottom:6px; color:var(--dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .price { color:var(--primary); font-size:1rem; font-weight:700; margin-bottom:6px; }
+    .location { color:var(--mid); font-size:.82rem; line-height:1.6; }
+    .card-hint { margin-top:12px; }
+    .card-hint span { background:var(--primary); color:#fff; padding:6px 14px; border-radius:50px; font-size:.78rem; font-weight:700; }
+  </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+  <a href="buy.html" class="navbar-brand">PROPERTY<span>HUB</span></a>
+  <div class="navbar-links">
+    <a href="buy.html">Properties</a>
+    <a href="prediction.html" class="active">Price Predictor</a>
+    <a href="login.html" class="btn-outline">Logout</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="page-intro">
+    <h1>Smart <span>Price</span> Predictor</h1>
+    <p>Get AI-powered property valuation with similar property recommendations.</p>
+  </div>
+
+  <div class="prediction-box">
+
+    <!-- ── LOCATION ── -->
+    <div class="section-label">📍 Location</div>
+    <div class="inputs-grid three">
+      <div>
+        <label class="form-label">City *</label>
+        <select class="form-control" id="city">
+          <option value="">Loading…</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Area</label>
+        <select class="form-control" id="area">
+          <option value="">Select area</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Compound</label>
+        <select class="form-control" id="compound">
+          <option value="">Select compound</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── PROPERTY ── -->
+    <div class="section-label">🏠 Property Details</div>
+    <div class="inputs-grid">
+      <div>
+        <label class="form-label">Property Type *</label>
+        <select class="form-control" id="propertyType">
+          <option value="">Loading…</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Offer Type *</label>
+        <select class="form-control" id="offerType">
+          <option value="">Loading…</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Area (m²) *</label>
+        <input type="number" class="form-control" id="areaSqm" placeholder="e.g. 120" min="1">
+      </div>
+      <div>
+        <label class="form-label">Bedrooms *</label>
+        <input type="number" class="form-control" id="bedrooms" placeholder="e.g. 3" min="0">
+      </div>
+      <div class="full">
+        <label class="form-label">Bathrooms *</label>
+        <input type="number" class="form-control" id="bathrooms" placeholder="e.g. 2" min="0">
+      </div>
+    </div>
+
+    <!-- ── AMENITIES ── -->
+    <div class="section-label">✨ Amenities <span style="font-size:.7rem;font-weight:400;text-transform:none;color:var(--mid);">(optional)</span></div>
+    <div class="amenities-wrap" id="amenitiesWrap">
+      <span class="am-loading">Loading amenities…</span>
+    </div>
+
+    <!-- ── DESCRIPTION ── -->
+    <div class="section-label">📝 Description <span style="font-size:.7rem;font-weight:400;text-transform:none;color:var(--mid);">(optional)</span></div>
+    <textarea class="form-control" id="description" rows="3"
+      placeholder="Describe the property to improve prediction accuracy…"
+      style="resize:vertical;"></textarea>
+
+    <!-- ── SUBMIT ── -->
+    <button class="predict-btn" id="predictBtn" onclick="predictPrice()">
+      Predict Price
+    </button>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <!-- ── RESULT ── -->
+    <div class="prediction-result" id="predictionResult">
+      <div class="result-label">AI Estimated Market Price</div>
+      <div class="result-price" id="resultValue">—</div>
+      <div class="result-tags" id="resultTags"></div>
+    </div>
+
+    <!-- ── RECOMMENDATIONS ── -->
+    <div id="recommendations"></div>
+
+  </div>
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000";
+let selectedAmenities = [];
+
+/* ─────────────────────────────────────────
+   AUTH
+───────────────────────────────────────── */
+function getToken() { return localStorage.getItem("token") || ""; }
+function authHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${getToken()}`
+  };
+}
+
+/* ─────────────────────────────────────────
+   LOAD OPTIONS FROM BACKEND
+───────────────────────────────────────── */
+async function loadOptions() {
+  try {
+    const res  = await fetch(`${API_BASE}/properties/options/all`, { headers: authHeaders() });
+    if (!res.ok) throw new Error("options failed");
+    const data = await res.json();
+
+    fillSelect("city",         data.city,          "Select city");
+    fillSelect("area",         data.area,           "Select area");
+    fillSelect("compound",     data.compound,       "Select compound");
+    fillSelect("propertyType", data.property_type,  "Select type");
+    fillSelect("offerType",    data.offering_type,  "Select offer type");
+    buildAmenities(data.amenities);
+
+  } catch (e) {
+    console.warn("Options load failed, using fallback:", e);
+    // fallback static values
+    fillSelect("city",         ["cairo","alexandria","giza","new cairo","6th of october","maadi","zamalek","sharm el-sheikh","hurghada"], "Select city");
+    fillSelect("propertyType", ["apartment","villa","chalet","studio","duplex","penthouse","townhouse"], "Select type");
+    fillSelect("offerType",    ["sale","rent"], "Select offer type");
+    document.getElementById("amenitiesWrap").innerHTML =
+      '<span class="am-loading" style="color:#c0392b">Could not load amenities</span>';
+  }
+}
+
+function fillSelect(id, values, placeholder) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = `<option value="">${placeholder}</option>` +
+    values.map(v => `<option value="${v}">${v}</option>`).join("");
+}
+
+function buildAmenities(list) {
+  const wrap = document.getElementById("amenitiesWrap");
+  if (!list || !list.length) {
+    wrap.innerHTML = '<span class="am-loading">No amenities found</span>';
+    return;
+  }
+  wrap.innerHTML = list.map(a => `
+    <div class="am-chip" data-value="${a}" onclick="toggleAmenity(this)">${a}</div>
+  `).join("");
+}
+
+function toggleAmenity(el) {
+  el.classList.toggle("selected");
+  const val = el.dataset.value;
+  if (el.classList.contains("selected")) {
+    selectedAmenities.push(val);
+  } else {
+    selectedAmenities = selectedAmenities.filter(x => x !== val);
+  }
+}
+
+/* ─────────────────────────────────────────
+   PREDICT
+───────────────────────────────────────── */
+async function predictPrice() {
+  const city         = document.getElementById("city").value.trim();
+  const propertyType = document.getElementById("propertyType").value;
+  const offerType    = document.getElementById("offerType").value;
+  const areaSqm      = parseFloat(document.getElementById("areaSqm").value);
+  const bedrooms     = parseInt(document.getElementById("bedrooms").value)  || 0;
+  const bathrooms    = parseInt(document.getElementById("bathrooms").value) || 0;
+  const area         = document.getElementById("area").value.trim();
+  const compound     = document.getElementById("compound").value.trim();
+  const description  = document.getElementById("description").value.trim();
+
+  const errEl = document.getElementById("errorMsg");
+  errEl.classList.remove("show");
+
+  if (!city || !propertyType || !offerType || isNaN(areaSqm) || areaSqm <= 0) {
+    errEl.textContent = "⚠️ Please fill in City, Property Type, Offer Type, and Area.";
+    errEl.classList.add("show");
+    return;
+  }
+
+  const btn = document.getElementById("predictBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ Analysing…";
+
+  try {
+    const res = await fetch(`${API_BASE}/ml/price-with-suggestions`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        city, area, compound,
+        property_type: propertyType,
+        offering_type: offerType,
+        area_sqm:      areaSqm,
+        bedrooms,
+        bathrooms,
+        amenities:   selectedAmenities,
+        description
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Server error ${res.status}`);
+    }
+
+    const data  = await res.json();
+    const price = data.prediction?.price ?? data.price_prediction ?? 0;
+
+    // show result
+    document.getElementById("predictionResult").classList.add("show");
+    document.getElementById("resultValue").textContent =
+      Number(price).toLocaleString() + " EGP";
+
+    document.getElementById("resultTags").innerHTML = [
+      `🏙️ ${city}`,
+      `🏠 ${propertyType}`,
+      `📐 ${areaSqm} m²`,
+      `🛏 ${bedrooms} bd · 🚿 ${bathrooms} ba`,
+      offerType === "rent" ? "🔑 For Rent" : "🏷️ For Sale",
+      selectedAmenities.length ? `✨ ${selectedAmenities.length} amenities` : null
+    ].filter(Boolean).map(t => `<span class="result-tag">${t}</span>`).join("");
+
+    renderRecommendations(data.recommendations || []);
+
+  } catch (e) {
+    errEl.textContent = "❌ " + (e.message || "Something went wrong.");
+    errEl.classList.add("show");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔮 Predict Price";
+  }
+}
+
+/* ─────────────────────────────────────────
+   RENDER RECOMMENDATIONS
+───────────────────────────────────────── */
+function fixImage(raw) {
+  if (!raw) return "https://placehold.co/600x400?text=No+Image";
+  try {
+    return String(raw).replace(/[\[\]'"]/g, "").trim().split(",")[0].trim()
+           || "https://placehold.co/600x400?text=No+Image";
+  } catch { return "https://placehold.co/600x400?text=No+Image"; }
+}
+
+function renderRecommendations(list) {
+  const container = document.getElementById("recommendations");
+
+  if (!list || !list.length) {
+    container.innerHTML = `<p style="margin-top:20px;color:var(--mid);font-size:.9rem">No similar properties found.</p>`;
+    return;
+  }
+
+  const props = list.map(r => {
+    const p = r.property || r;
+    p._score = r.score ?? r.content_score ?? 0;
+    return p;
+  });
+
+  container.innerHTML = `
+    <h3 class="rec-title">Similar Properties</h3>
+    <div class="properties-grid">
+      ${props.map(p => {
+        const pid    = p.property_id || p.id;
+        const img    = fixImage(p.all_image_url || p.image_urls);
+        const isSale = (p.offering_type || "").toLowerCase() === "sale";
+        const price  = Number(p.price || 0).toLocaleString() + " EGP" + (isSale ? "" : "/mo");
+        const pct    = Math.min(99, Math.round((p._score || 0) * 100));
+
+        return `
+          <div class="property-card" onclick="viewDetails(${pid})">
+            <div class="match-badge">⭐ ${pct}% match</div>
+            <button class="fav-btn"
+              onclick="event.stopPropagation();this.textContent=this.textContent==='🤍'?'❤️':'🤍'">🤍</button>
+            <img src="${img}" alt="${p.title || 'Property'}" loading="lazy"
+                 onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+            <div class="property-info">
+              <span class="badge ${isSale ? 'badge-sale' : 'badge-rent'}">
+                ${isSale ? 'For Sale' : 'For Rent'}
+              </span>
+              <h3 title="${p.title || ''}">${p.title || 'Property'}</h3>
+              <div class="price">${price}</div>
+              <div class="location">
+                📍 ${p.area || ''}, ${p.city || 'Egypt'}<br>
+                🏠 ${p.property_type || 'N/A'}<br>
+                🛏 ${p.bedrooms || 0} Beds · 🚿 ${p.bathrooms || 0} Baths · 📐 ${p.area_sqm || 0} m²
+              </div>
+              <div class="card-hint"><span>View Details →</span></div>
+            </div>
+          </div>`;
+      }).join("")}
+    </div>`;
+}
+
+/* ─────────────────────────────────────────
+   NAVIGATE
+───────────────────────────────────────── */
+function viewDetails(id) {
+  localStorage.setItem("property_id", id);
+  // track click
+  fetch(`${API_BASE}/ml/track`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ property_id: id, action: "click" })
+  }).catch(() => {});
+  window.location.href = `property-details.html?id=${id}`;
+}
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+loadOptions();
+</script>
+</body>
+</html>

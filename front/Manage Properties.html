@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Properties – PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="image/logo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .page-title { margin-bottom:28px }
+    .page-title h2 { font-family:'Playfair Display',serif; font-size:1.7rem; margin:0 0 4px }
+    .page-title p  { color:var(--mid,#888); margin:0; font-size:.9rem }
+
+    .section-card {
+      background:var(--white,#fff); border-radius:16px; padding:24px 28px;
+      box-shadow:0 4px 24px rgba(0,0,0,.07); border:1px solid var(--border,#eee); margin-bottom:28px;
+    }
+    .section-card h3 { margin:0 0 20px; font-size:1rem; font-weight:700; display:flex; align-items:center; gap:8px }
+
+    .prop-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px }
+    .prop-form input, .prop-form textarea {
+      padding:10px 13px; border:1.5px solid var(--border,#e0e0e0); border-radius:10px;
+      font-size:.88rem; outline:none; font-family:inherit; transition:.2s; background:#fff;
+    }
+    .prop-form input:focus, .prop-form textarea:focus { border-color:var(--primary,#D31148) }
+    .prop-form textarea { grid-column:1/-1; resize:vertical; min-height:70px }
+    .prop-form .full { grid-column:1/-1 }
+    .form-actions { grid-column:1/-1; display:flex; gap:10px; margin-top:4px }
+    .btn-add { padding:11px 28px; background:var(--primary,#D31148); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:.9rem; cursor:pointer; transition:.2s }
+    .btn-add:hover    { background:#a50d38 }
+    .btn-add:disabled { background:#ccc; cursor:not-allowed }
+    .btn-cancel-form  { padding:11px 20px; background:transparent; color:var(--mid,#888); border:1.5px solid var(--border,#ddd); border-radius:10px; font-size:.9rem; cursor:pointer }
+    .form-msg { font-size:.85rem; margin-top:8px; min-height:18px }
+    .form-msg.ok  { color:#16a34a }
+    .form-msg.err { color:#D31148 }
+
+    /* ── SEARCH SECTION ── */
+    .search-section {
+      background:var(--white,#fff); border-radius:16px; padding:20px 24px;
+      box-shadow:0 4px 24px rgba(0,0,0,.07); border:1px solid var(--border,#eee); margin-bottom:20px;
+    }
+    .search-section h4 { font-size:.85rem; font-weight:700; color:var(--mid,#888); text-transform:uppercase; letter-spacing:.5px; margin:0 0 14px }
+    .search-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+    .search-row input, .search-row select {
+      flex:1; min-width:150px; padding:10px 14px; border:1.5px solid var(--border,#e0e0e0);
+      border-radius:10px; font-size:.88rem; outline:none; background:#fff; font-family:inherit; transition:.2s;
+    }
+    .search-row input:focus, .search-row select:focus { border-color:var(--primary,#D31148) }
+    .prop-count { font-size:.82rem; color:var(--mid,#999); margin-left:auto; white-space:nowrap; font-weight:600 }
+
+    .table-wrap { overflow-x:auto }
+    .admin-table { width:100%; border-collapse:collapse; font-size:.85rem }
+    .admin-table th {
+      padding:11px 14px; text-align:left; border-bottom:2px solid var(--border,#eee);
+      font-weight:700; color:var(--mid,#666); font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;
+    }
+    .admin-table td { padding:12px 14px; border-bottom:1px solid var(--border,#f0f0f0); vertical-align:middle }
+    .admin-table tr:hover td   { background:#fafafa }
+    .admin-table tr.editing td { background:#fff8f9 }
+
+    .prop-img { width:54px; height:40px; object-fit:cover; border-radius:7px; display:block }
+    .badge-sale { background:#fde8ef; color:#D31148; padding:3px 9px; border-radius:20px; font-size:.72rem; font-weight:700 }
+    .badge-rent { background:#e8f4fd; color:#1a6fa3; padding:3px 9px; border-radius:20px; font-size:.72rem; font-weight:700 }
+
+    .edit-input { padding:5px 8px; border:1.5px solid var(--primary,#D31148); border-radius:7px; font-size:.82rem; width:100%; box-sizing:border-box; outline:none }
+    .btn-edit   { padding:6px 13px; border:1.5px solid var(--primary,#D31148); color:var(--primary,#D31148); background:transparent; border-radius:8px; font-size:.78rem; font-weight:600; cursor:pointer; transition:.2s; white-space:nowrap }
+    .btn-edit:hover { background:var(--primary,#D31148); color:#fff }
+    .btn-save   { padding:6px 13px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:.78rem; font-weight:600; cursor:pointer; white-space:nowrap }
+    .btn-save:hover { background:#15803d }
+    .btn-delete { padding:6px 13px; background:#dc3545; color:#fff; border:none; border-radius:8px; font-size:.78rem; font-weight:600; cursor:pointer; white-space:nowrap }
+    .btn-delete:hover { opacity:.85 }
+    .btn-cancel-edit { padding:6px 10px; background:#f5f5f5; color:#666; border:none; border-radius:8px; font-size:.78rem; cursor:pointer }
+    .action-group { display:flex; gap:6px; align-items:center }
+
+    .pagination { display:flex; gap:6px; justify-content:center; margin-top:18px; flex-wrap:wrap }
+    .pg-btn { padding:6px 13px; border:1.5px solid var(--border,#ddd); border-radius:8px; background:#fff; font-size:.82rem; cursor:pointer; transition:.2s }
+    .pg-btn:hover, .pg-btn.active { background:var(--primary,#D31148); color:#fff; border-color:var(--primary,#D31148) }
+
+    .spinner { width:32px; height:32px; border:3px solid #f0f0f0; border-top-color:var(--primary,#D31148); border-radius:50%; animation:spin .8s linear infinite; margin:40px auto }
+    @keyframes spin { to { transform:rotate(360deg) } }
+    .empty-state { text-align:center; padding:48px 20px; color:var(--mid,#aaa) }
+    .empty-state .ico { font-size:2.5rem; margin-bottom:10px }
+
+    /* toast */
+    #__toast { position:fixed; bottom:28px; right:28px; z-index:9999; padding:13px 22px; border-radius:12px; font-size:.88rem; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,.15); transition:opacity .3s; opacity:0; pointer-events:none }
+  </style>
+</head>
+<body>
+
+<div id="__toast"></div>
+
+<nav class="navbar">
+  <a href="login.html" class="navbar-brand">PROPERTY<span>HUB</span></a>
+  <div class="navbar-links">
+    <a href="buy.html">Properties</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="login.html" class="btn-primary"
+       onclick="localStorage.removeItem('token');localStorage.removeItem('user_id');localStorage.removeItem('user_name')">
+      Logout
+    </a>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">PROPERTY<span>HUB</span><br><small>Admin Panel</small></div>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="buy.html">Properties</a>
+    <a href="manage_properties.html" class="active">Manage Properties</a>
+  </aside>
+
+  <main class="main-content">
+
+    <div class="page-title">
+      <h2>🏘️ Manage Properties</h2>
+      <p>Add, edit, and delete property listings.</p>
+    </div>
+
+    <!-- ADD FORM -->
+    <div class="section-card">
+      <h3>➕ Add New Property</h3>
+      <div class="prop-form" id="addForm">
+        <input id="f_title"     type="text"   placeholder="Property Title">
+        <input id="f_price"     type="number" placeholder="Price (EGP)">
+        <input id="f_offering"  type="text"   placeholder="Offering Type (e.g. sale, rent-month)">
+        <input id="f_type"      type="text"   placeholder="Property Type (e.g. Apartment, Villa)">
+        <input id="f_city"      type="text"   placeholder="City">
+        <input id="f_area"      type="text"   placeholder="Area / District">
+        <input id="f_compound"  type="text"   placeholder="Compound (optional)">
+        <input id="f_bedrooms"  type="number" placeholder="Bedrooms">
+        <input id="f_bathrooms" type="number" placeholder="Bathrooms">
+        <input id="f_area_sqm"  type="number" placeholder="Area (m²)">
+        <input id="f_lat"       type="number" placeholder="Latitude"  step="any">
+        <input id="f_lng"       type="number" placeholder="Longitude" step="any">
+        <textarea id="f_amenities" placeholder="Amenities (comma separated) e.g. Pool, Gym, Parking, Security"></textarea>
+        <input id="f_image" class="full" type="text" placeholder="Image URL(s) — comma separated">
+        <textarea id="f_desc" placeholder="Description (optional)"></textarea>
+        <div class="form-actions">
+          <button class="btn-add" id="addBtn" onclick="addProperty()">➕ Add Property</button>
+          <button class="btn-cancel-form" onclick="clearForm()">Clear</button>
+        </div>
+        <div class="form-msg" id="addMsg"></div>
+      </div>
+    </div>
+
+    <!-- SEARCH SECTION -->
+    <div class="search-section">
+      <h4>🔍 Search & Filter</h4>
+      <div class="search-row">
+        <input  id="searchInput"    type="text"   placeholder="Search by title, city, area, ID…" oninput="onSearch()">
+        <select id="filterOffering" onchange="onSearch()">
+          <option value="">All Offering Types</option>
+        </select>
+        <select id="filterType" onchange="onSearch()">
+          <option value="">All Categories</option>
+        </select>
+        <span class="prop-count" id="propCount">—</span>
+      </div>
+    </div>
+
+    <!-- PROPERTIES TABLE -->
+    <div class="section-card">
+      <h3>📋 All Properties</h3>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Img</th><th>ID</th><th>Title</th><th>Type</th>
+              <th>Offering</th><th>City</th><th>Price</th><th>Beds</th><th>m²</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="propTbody">
+            <tr><td colspan="10"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const BASE    = 'http://127.0.0.1:8000';
+const token   = localStorage.getItem('token');
+const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` };
+
+if (!token) window.location.href = 'login.html';
+fetch(`${BASE}/auth/me`, { headers })
+  .then(r => r.ok ? r.json() : null)
+  .then(u => { if (!u || !u.is_admin) window.location.href = 'login.html'; })
+  .catch(() => window.location.href = 'login.html');
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let editingId   = null;
+let currentPage = 1;
+let totalPages  = 1;
+let totalCount  = 0;
+const PAGE_SIZE = 50;   // ✅ 50 بس في كل request
+let searchTimer = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fixImage(s) {
+  if (!s) return 'https://placehold.co/80x50?text=No+Img';
+  try { return s.toString().replace(/[\[\]'"]/g,'').trim().split(',')[0].trim() || 'https://placehold.co/80x50?text=No+Img'; }
+  catch { return 'https://placehold.co/80x50?text=No+Img'; }
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toast(msg, type='ok') {
+  const t = document.getElementById('__toast');
+  t.textContent = msg;
+  t.style.background = type === 'ok' ? '#16a34a' : '#D31148';
+  t.style.color = '#fff';
+  t.style.opacity = '1';
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.style.opacity = '0', 3000);
+}
+
+// ── Load options من الداتا ────────────────────────────────────────────────────
+async function loadOptions() {
+  try {
+    const res  = await fetch(`${BASE}/properties/options/all`, { headers });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const populate = (elId, values) => {
+      const el = document.getElementById(elId);
+      values.forEach(v => { el.innerHTML += `<option value="${v}">${v}</option>`; });
+    };
+    populate('filterOffering', data.offering_type || []);
+    populate('filterType',     data.property_type || []);
+  } catch(e) { console.warn('Options error:', e); }
+}
+
+// ── Fetch من السيرفر بـ pagination + search ───────────────────────────────────
+async function fetchPage(page = 1) {
+  const q   = document.getElementById('searchInput').value.trim();
+  const off = document.getElementById('filterOffering').value;
+  const typ = document.getElementById('filterType').value;
+
+  const isId  = q && /^\d+$/.test(q);
+
+  const params = new URLSearchParams({ page, limit: PAGE_SIZE });
+    if (isId) {
+      params.set('property_id', q);
+    } else {
+      if (q)   params.set('search',        q);
+      if (off) params.set('offering_type', off);
+      if (typ) params.set('property_type', typ);
+    }
+
+  document.getElementById('propTbody').innerHTML =
+    '<tr><td colspan="10"><div class="spinner"></div></td></tr>';
+
+  try {
+    const res  = await fetch(`${BASE}/properties/admin/all?${params}`, { headers });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+
+    const props   = data.properties || (Array.isArray(data) ? data : []);
+    totalCount    = data.total      || props.length;
+    totalPages    = data.total_pages|| Math.ceil(totalCount / PAGE_SIZE);
+    currentPage   = page;
+
+    document.getElementById('propCount').textContent = `${totalCount.toLocaleString()} properties`;
+    renderRows(props);
+    renderPagination();
+  } catch(e) {
+    document.getElementById('propTbody').innerHTML =
+      `<tr><td colspan="10"><div class="empty-state"><div class="ico">⚠️</div><p>${e.message}</p></div></td></tr>`;
+  }
+}
+
+// ── Search: debounce 400ms ────────────────────────────────────────────────────
+function onSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => fetchPage(1), 400);
+}
+
+// ── Render rows ───────────────────────────────────────────────────────────────
+function renderRows(props) {
+  const tbody = document.getElementById('propTbody');
+
+  if (!props.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="ico">🏠</div><p>No properties found.</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = props.map(p => {
+    const pid    = p.property_id || p.id;
+    const isSale = (p.offering_type||'').toLowerCase() === 'sale';
+
+    if (editingId === pid) {
+      return `
+        <tr class="editing" id="row_${pid}">
+          <td><img class="prop-img" src="${fixImage(p.all_image_url)}" onerror="this.src='https://placehold.co/80x50?text=No+Img'"></td>
+          <td style="color:var(--mid);font-size:.8rem">#${pid}</td>
+          <td><input class="edit-input" id="e_title"    value="${esc(p.title||'')}"></td>
+          <td><input class="edit-input" id="e_type"     value="${esc(p.property_type||'')}" style="min-width:100px"></td>
+          <td><input class="edit-input" id="e_offering" value="${esc(p.offering_type||'')}"></td>
+          <td><input class="edit-input" id="e_city"     value="${esc(p.city||'')}" style="min-width:80px"></td>
+          <td><input class="edit-input" id="e_price"    type="number" value="${p.price||0}" style="min-width:90px"></td>
+          <td><input class="edit-input" id="e_beds"     type="number" value="${p.bedrooms||0}" style="width:50px"></td>
+          <td><input class="edit-input" id="e_sqm"      type="number" value="${p.area_sqm||0}" style="width:60px"></td>
+          <td>
+            <div class="action-group">
+              <button class="btn-save"        onclick="saveEdit(${pid})">💾 Save</button>
+              <button class="btn-cancel-edit" onclick="cancelEdit()">✕</button>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    return `
+      <tr id="row_${pid}">
+        <td><img class="prop-img" src="${fixImage(p.all_image_url)}" onerror="this.src='https://placehold.co/80x50?text=No+Img'" loading="lazy"></td>
+        <td style="color:var(--mid);font-size:.8rem">#${pid}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(p.title||'')}">
+          <strong>${esc(p.title||'—')}</strong></td>
+        <td>${esc(p.property_type||'—')}</td>
+        <td><span class="badge-${isSale?'sale':'rent'}">${isSale?'Sale':'Rent'}</span></td>
+        <td>${esc(p.city||'—')}</td>
+        <td style="white-space:nowrap">${Number(p.price||0).toLocaleString()} EGP</td>
+        <td>${p.bedrooms||'—'}</td>
+        <td>${p.area_sqm||'—'}</td>
+        <td>
+          <div class="action-group">
+            <button class="btn-edit"   onclick="startEdit(${pid})">✏️ Edit</button>
+            <button class="btn-delete" onclick="deleteProperty(${pid})">🗑️</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+function renderPagination() {
+  if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+
+  const maxV = 10;
+  let s = Math.max(1, currentPage - Math.floor(maxV/2));
+  let e = s + maxV - 1;
+  if (e > totalPages) { e = totalPages; s = Math.max(1, e - maxV + 1); }
+
+  let html = '';
+  if (currentPage > 1)
+    html += `<button class="pg-btn" onclick="goPage(${currentPage-1})">←</button>`;
+  if (s > 1) {
+    html += `<button class="pg-btn" onclick="goPage(1)">1</button>`;
+    if (s > 2) html += `<span style="padding:0 6px;color:var(--mid,#999)">…</span>`;
+  }
+  for (let i = s; i <= e; i++)
+    html += `<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  if (e < totalPages) {
+    if (e < totalPages-1) html += `<span style="padding:0 6px;color:var(--mid,#999)">…</span>`;
+    html += `<button class="pg-btn" onclick="goPage(${totalPages})">${totalPages}</button>`;
+  }
+  if (currentPage < totalPages)
+    html += `<button class="pg-btn" onclick="goPage(${currentPage+1})">→</button>`;
+
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(n) { fetchPage(n); window.scrollTo(0, 400); }
+
+// ── ADD ───────────────────────────────────────────────────────────────────────
+async function addProperty() {
+  const btn = document.getElementById('addBtn');
+  const msg = document.getElementById('addMsg');
+  msg.textContent = ''; msg.className = 'form-msg';
+
+  const payload = {
+    title:         document.getElementById('f_title').value.trim()     || undefined,
+    price:         Number(document.getElementById('f_price').value)    || undefined,
+    offering_type: document.getElementById('f_offering').value.trim()  || undefined,
+    property_type: document.getElementById('f_type').value.trim()      || undefined,
+    city:          document.getElementById('f_city').value.trim()      || undefined,
+    area:          document.getElementById('f_area').value.trim()      || undefined,
+    compound:      document.getElementById('f_compound').value.trim()  || undefined,
+    bedrooms:      Number(document.getElementById('f_bedrooms').value) || undefined,
+    bathrooms:     Number(document.getElementById('f_bathrooms').value)|| undefined,
+    area_sqm:      Number(document.getElementById('f_area_sqm').value) || undefined,
+    latitude:      Number(document.getElementById('f_lat').value)      || undefined,
+    longitude:     Number(document.getElementById('f_lng').value)      || undefined,
+    amenities: document.getElementById('f_amenities').value.trim()     || undefined,
+    all_image_url: document.getElementById('f_image').value.trim()     || undefined,
+    description:   document.getElementById('f_desc').value.trim()      || undefined,
+  };
+  Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    const res  = await fetch(`${BASE}/properties/`, { method:'POST', headers, body:JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed');
+    msg.textContent = `✅ Property #${data.property_id} added!`;
+    msg.className   = 'form-msg ok';
+    toast(`✅ Property #${data.property_id} added!`);
+    clearForm();
+    await fetchPage(1);
+  } catch(e) {
+    msg.textContent = '❌ ' + e.message;
+    msg.className   = 'form-msg err';
+    toast('❌ ' + e.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '➕ Add Property';
+  }
+}
+
+function clearForm() {
+  ['f_title','f_price','f_offering','f_type','f_city','f_area','f_compound',
+   'f_bedrooms','f_bathrooms','f_area_sqm','f_lat','f_lng','f_amenities','f_image','f_desc']
+  .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('addMsg').textContent = '';
+}
+
+// ── EDIT ──────────────────────────────────────────────────────────────────────
+function startEdit(pid) {
+  editingId = pid;
+  // re-render current page to show edit row
+  const tbody = document.getElementById('propTbody');
+  const rows  = [...tbody.querySelectorAll('tr[id]')];
+  rows.forEach(r => {
+    if (r.id === `row_${pid}`) r.classList.add('editing');
+  });
+  fetchPage(currentPage);
+}
+
+function cancelEdit() { editingId = null; fetchPage(currentPage); }
+
+async function saveEdit(pid) {
+  const payload = {
+    title:         document.getElementById('e_title').value.trim()    || undefined,
+    property_type: document.getElementById('e_type').value.trim()     || undefined,
+    offering_type: document.getElementById('e_offering').value.trim() || undefined,
+    city:          document.getElementById('e_city').value.trim()     || undefined,
+    price:         Number(document.getElementById('e_price').value)   || undefined,
+    bedrooms:      Number(document.getElementById('e_beds').value)    || undefined,
+    area_sqm:      Number(document.getElementById('e_sqm').value)     || undefined,
+  };
+  Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+  try {
+    const res  = await fetch(`${BASE}/properties/${pid}`, { method:'PUT', headers, body:JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Update failed');
+    editingId = null;
+    toast('✅ Property updated!');
+    await fetchPage(currentPage);
+  } catch(e) { toast('❌ ' + e.message, 'err'); }
+}
+
+// ── DELETE ────────────────────────────────────────────────────────────────────
+async function deleteProperty(pid) {
+  if (!confirm(`Delete property #${pid}? This cannot be undone.`)) return;
+  try {
+    const res = await fetch(`${BASE}/properties/${pid}`, { method:'DELETE', headers });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Delete failed'); }
+    toast(`🗑️ Property #${pid} deleted`);
+    await fetchPage(currentPage);
+  } catch(e) { toast('❌ ' + e.message, 'err'); }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadOptions();
+fetchPage(1);
+</script>
+
+</body>
+</html>

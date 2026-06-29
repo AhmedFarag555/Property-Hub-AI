@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login – PropertyHUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="image/logo.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+
+    :root{
+      --primary:#D31148;
+      --primary-dark:#a50d38;
+      --dark:#1a1816;
+      --dark-2:#2c2a26;
+      --mid:#6b6967;
+      --light:#f5f4f2;
+      --white:#fff;
+      --border:#e5e3e0;
+
+      --card-shadow:0 4px 24px rgba(0,0,0,.08);
+      --card-shadow-hover:0 12px 40px rgba(0,0,0,.15);
+
+      --radius:16px;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family:'DM Sans',sans-serif;
+      background:var(--light);
+      color:var(--dark-2);
+    }
+
+    /* NAVBAR */
+
+    .navbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:20px 48px;
+      background:var(--white);
+      border-bottom:1px solid var(--border);
+      position:sticky;
+      top:0;
+      z-index:100;
+    }
+
+    .navbar-brand{
+      font-family:'Playfair Display',serif;
+      font-weight:900;
+      font-size:1.4rem;
+      color:var(--dark);
+      text-decoration:none;
+    }
+
+    .navbar-brand span{
+      color:var(--primary);
+    }
+
+    .navbar-links{
+      display:flex;
+      gap:32px;
+      align-items:center;
+    }
+
+    .navbar-links a{
+      text-decoration:none;
+      color:var(--mid);
+      font-size:.9rem;
+      font-weight:500;
+      transition:.2s;
+    }
+
+    .navbar-links a:hover,
+    .navbar-links a.active{
+      color:var(--primary);
+    }
+
+    .btn-outline{
+      background:transparent;
+      color:var(--dark-2);
+      border:1.5px solid var(--border);
+      padding:10px 24px;
+      border-radius:50px;
+      font-size:.875rem;
+      font-weight:600;
+      text-decoration:none;
+      transition:.2s;
+    }
+
+    .btn-outline:hover{
+      border-color:var(--dark-2);
+      background:var(--dark-2);
+      color:white;
+    }
+
+    /* HERO */
+
+    .hero-section{
+      background:linear-gradient(
+        135deg,
+        var(--dark) 0%,
+        #2e1020 100%
+      );
+
+      padding:60px 48px;
+      color:white;
+    }
+
+    .hero-section h1{
+      font-family:'Playfair Display',serif;
+      font-size:2.8rem;
+      font-weight:900;
+      margin-bottom:12px;
+    }
+
+    .hero-section h1 span{
+      color:var(--primary);
+    }
+
+    .hero-section p{
+      opacity:.75;
+      max-width:500px;
+    }
+
+    /* SEARCH */
+
+    .search-bar{
+      display:flex;
+      gap:10px;
+      margin-top:28px;
+      flex-wrap:wrap;
+      max-width:900px;
+    }
+
+    .search-bar input{
+      flex:1;
+      min-width:170px;
+      padding:13px 18px;
+      border:none;
+      border-radius:12px;
+      outline:none;
+      font-size:.95rem;
+    }
+
+    .search-bar select {
+      flex: 1;
+      min-width: 170px;
+      padding: 13px 18px;
+      border: 1px solid var(--border);
+      border-radius: 50px; /* 🔥 ده اللي يخليه بيضاوي */
+      outline: none;
+      font-size: 0.95rem;
+      background: white;
+      appearance: none; /* يشيل شكل الـ select الافتراضي */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .search-bar button{
+      padding:13px 28px;
+      background:var(--primary);
+      color:white;
+      border:none;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .search-bar button:hover{
+      background:var(--primary-dark);
+    }
+
+    /* SECTION */
+
+    .properties-section{
+      padding:48px;
+    }
+
+    /* FILTERS */
+
+    .filter-tabs{
+      display:flex;
+      gap:8px;
+      margin-bottom:28px;
+      flex-wrap:wrap;
+    }
+
+    .filter-tab{
+      padding:8px 20px;
+      border:1.5px solid var(--border);
+      border-radius:50px;
+      background:white;
+      font-size:.875rem;
+      font-weight:600;
+      color:var(--mid);
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .filter-tab.active,
+    .filter-tab:hover{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:white;
+    }
+
+    /* GRID */
+
+    .properties-grid{
+      display:grid;
+      grid-template-columns:
+      repeat(auto-fill,minmax(280px,1fr));
+
+      gap:24px;
+    }
+
+    /* CARD */
+
+    .property-card{
+      background:white;
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:var(--card-shadow);
+      border:1px solid var(--border);
+      transition:.25s;
+      cursor:pointer;
+      position:relative;
+    }
+
+    .property-card:hover{
+      transform:translateY(-5px);
+      box-shadow:var(--card-shadow-hover);
+    }
+
+    .property-card img{
+      width:100%;
+      height:220px;
+      object-fit:cover;
+      display:block;
+    }
+
+    .property-info{
+      padding:20px;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:50px;
+      font-size:.75rem;
+      font-weight:700;
+      margin-bottom:12px;
+    }
+
+    .badge-sale{
+      background:#fde8ef;
+      color:var(--primary);
+    }
+
+    .badge-rent{
+      background:#e8f4fd;
+      color:#1a6fa3;
+    }
+
+    .property-info h3{
+      font-family:'Playfair Display',serif;
+      font-size:1.1rem;
+      margin-bottom:8px;
+      color:var(--dark);
+    }
+
+    .price{
+      color:var(--primary);
+      font-size:1rem;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    .location{
+      color:var(--mid);
+      font-size:.85rem;
+      line-height:1.6;
+    }
+
+    .card-hint{
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:.8rem;
+      color:var(--mid);
+    }
+
+    .card-hint span{
+      background:var(--primary);
+      color:white;
+      padding:5px 12px;
+      border-radius:50px;
+      font-weight:700;
+    }
+
+    .fav-btn{
+      position:absolute;
+      top:12px;
+      right:12px;
+      width:36px;
+      height:36px;
+      border:none;
+      border-radius:50%;
+      background:rgba(255,255,255,.92);
+      cursor:pointer;
+      font-size:17px;
+      z-index:2;
+    }
+
+    /* PAGINATION */
+
+    .pagination{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:40px;
+    }
+
+    .pagination button{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      transition:.2s;
+      background:white;
+      border:1px solid var(--border);
+    }
+
+    .pagination button.active{
+      background:var(--primary);
+      color:white;
+      border-color:var(--primary);
+    }
+
+    .pagination button:hover{
+      transform:translateY(-2px);
+    }
+
+    /* EMPTY */
+
+    .empty-state{
+      display:none;
+      text-align:center;
+      padding:60px 20px;
+      color:var(--mid);
+    }
+
+    .empty-state.show{
+      display:block;
+    }
+
+    @media(max-width:768px){
+
+      .navbar{
+        padding:16px 24px;
+      }
+
+      .hero-section{
+        padding:40px 24px;
+      }
+
+      .hero-section h1{
+        font-size:2rem;
+      }
+
+      .properties-section{
+        padding:28px 24px;
+      }
+
+    }
+
+      .nav-profile-icon{width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;letter-spacing:.5px;box-shadow:0 2px 8px rgba(211,17,72,.35);transition:.2s}
+    .nav-profile-icon:hover{background:#a50d38;box-shadow:0 4px 16px rgba(211,17,72,.45)}
+  </style>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#D31148">
+  <link rel="apple-touch-icon" href="image/icon-192.png">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav class="navbar">
+
+  <a href="buy.html" class="navbar-brand">
+    PROPERTY<span>HUB</span>
+  </a>
+
+  <div class="navbar-links">
+
+    <button id="installBtn" style="display:none; padding:8px 16px; background:#D31148; color:#fff;
+            border:none; border-radius:8px; font-size:.85rem; font-weight:600; cursor:pointer;
+            font-family:'DM Sans',sans-serif;">
+      📲 Install App
+    </button>
+
+    <a href="buy.html" class="active">
+      Properties
+    </a>
+
+    <a href="prediction.html">
+      Price Predictor
+    </a>
+
+        <a href="profile.html" class="nav-profile-icon" id="navProfileIcon" title="My Profile">P</a>
+    <a href="login.html" class="btn-outline" onclick="localStorage.removeItem('token');localStorage.removeItem('user_id');localStorage.removeItem('user_name')">
+      Logout
+    </a>
+
+  </div>
+
+</nav>
+
+<!-- HERO -->
+
+<div class="hero-section">
+
+  <h1>
+
+    Find Your <span>Perfect</span>
+    <br>
+    Property
+
+  </h1>
+
+  <p>
+
+    Explore verified properties across Egypt.
+
+  </p>
+
+  <!-- SEARCH -->
+
+  <div class="search-bar">
+
+  <input
+    type="text"
+    placeholder="Search area..."
+    id="searchInput"
+  >
+
+  <input
+    type="number"
+    placeholder="Min Price"
+    id="minPrice"
+  >
+
+  <input
+    type="number"
+    placeholder="Max Price"
+    id="maxPrice"
+  >
+
+  <select id="propertyType">
+    <option value="">Property Type</option>
+  </select>
+
+  <select id="city">
+    <option value="">City</option>
+  </select>
+
+  <input
+    type="number"
+    placeholder="Bedrooms"
+    id="bedrooms"
+  >
+
+  <input
+    type="number"
+    placeholder="Bathrooms"
+    id="bathrooms"
+  >
+
+  <button onclick="getProperties(1)">
+    Search
+  </button>
+
+</div>
+
+</div>
+
+<!-- PROPERTIES -->
+
+<div class="properties-section">
+
+  <!-- FILTER -->
+
+  <div class="filter-tabs">
+
+  <button
+    class="filter-tab active"
+    onclick="
+      localStorage.setItem('page_type','sale');
+      window.location.href='buy.html';
+    "
+  >
+    For Sale
+  </button>
+
+  <button
+    class="filter-tab"
+    onclick="
+      localStorage.setItem('page_type','rent');
+      window.location.href='rent.html';
+    "
+  >
+    For Rent
+  </button>
+
+</div>
+
+  <!-- GRID -->
+
+  <div
+    class="properties-grid"
+    id="propertiesContainer"
+  ></div>
+
+  <!-- PAGINATION -->
+
+  <div
+    class="pagination"
+    id="pagination"
+  ></div>
+
+  <!-- EMPTY -->
+
+  <div
+    class="empty-state"
+    id="emptyState"
+  >
+
+    <p>
+      No properties found.
+    </p>
+
+  </div>
+
+</div>
+
+<script>
+// ── Track last visited page (for PWA launch.html) ──────────────────────────
+(function () {
+  const page = window.location.pathname.split('/').pop() || 'buy.html';
+  if (page !== 'login.html' && page !== 'launch.html') {
+    localStorage.setItem('last_page', page);
+  }
+})();
+</script>
+<script>
+
+let properties = [];
+
+let currentPage = 1;
+let totalPages = 1;
+
+let currentFilter =
+  localStorage.getItem("page_type") === "rent"
+    ? "rent-month"
+    : "sale";
+
+
+window.addEventListener("load", () => {
+
+  const isRent =
+    localStorage.getItem("page_type") === "rent";
+
+  const buttons =
+    document.querySelectorAll(".filter-tab");
+
+  if(isRent){
+
+    buttons[0].classList.remove("active");
+    buttons[1].classList.add("active");
+
+  } else {
+
+    buttons[1].classList.remove("active");
+    buttons[0].classList.add("active");
+
+  }
+
+});
+
+
+async function getProperties(page = 1){
+
+  // 1) احفظ الحالة قبل أي حاجة
+  filtersState.search = document.getElementById("searchInput").value;
+  filtersState.city = document.getElementById("city").value;
+  filtersState.propertyType = document.getElementById("propertyType").value;
+  filtersState.minPrice = document.getElementById("minPrice").value;
+  filtersState.maxPrice = document.getElementById("maxPrice").value;
+  filtersState.bedrooms = document.getElementById("bedrooms").value;
+  filtersState.bathrooms = document.getElementById("bathrooms").value;
+
+  let url = `http://127.0.0.1:8000/properties?page=${page}&limit=30`;
+
+  if(currentFilter){
+    url += `&offering_type=${currentFilter}`;
+  }
+  if(filtersState.search) url += `&search=${filtersState.search}`;
+  if(filtersState.city) url += `&city=${filtersState.city}`;
+  if(filtersState.propertyType) url += `&property_type=${filtersState.propertyType}`;
+  if(filtersState.minPrice) url += `&min_price=${filtersState.minPrice}`;
+  if(filtersState.maxPrice) url += `&max_price=${filtersState.maxPrice}`;
+  if(filtersState.bedrooms) url += `&bedrooms=${filtersState.bedrooms}`;
+  if(filtersState.bathrooms) url += `&bathrooms=${filtersState.bathrooms}`;
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(url, {
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+
+  const data = await res.json();
+
+  properties = data.properties;
+  currentPage = data.page;
+  totalPages = data.total_pages;
+
+  // 2) rebuild filters
+  setupFilters(data.filters);
+
+  // 3) IMPORTANT: restore بعد ما الـ DOM يتبني
+  restoreFiltersUI();
+
+  renderCards();
+  renderPagination();
+}
+
+function setupFilters(filters){
+
+  const typeSelect = document.getElementById("propertyType");
+  const citySelect = document.getElementById("city");
+
+  // 🔥 RESET IMPORTANT
+  typeSelect.innerHTML = `<option value="">Property Type</option>`;
+  citySelect.innerHTML = `<option value="">City</option>`;
+
+  // fill property types
+  filters.property_type.forEach(t => {
+    typeSelect.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${t}">${t}</option>`
+    );
+  });
+
+  // fill cities
+  filters.city.forEach(c => {
+    citySelect.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${c}">${c}</option>`
+    );
+  });
+
+  // placeholders
+  document.getElementById("minPrice").placeholder =
+    `Min (${filters.price_min})`;
+
+  document.getElementById("maxPrice").placeholder =
+    `Max (${filters.price_max})`;
+
+  document.getElementById("bedrooms").placeholder =
+    `${filters.bedrooms_min} - ${filters.bedrooms_max}`;
+
+  document.getElementById("bathrooms").placeholder =
+    `${filters.bathrooms_min} - ${filters.bathrooms_max}`;
+}
+
+let filtersState = {
+  search: "",
+  city: "",
+  propertyType: "",
+  minPrice: "",
+  maxPrice: "",
+  bedrooms: "",
+  bathrooms: ""
+};
+function restoreFiltersUI(){
+
+  document.getElementById("searchInput").value = filtersState.search || "";
+  document.getElementById("minPrice").value = filtersState.minPrice || "";
+  document.getElementById("maxPrice").value = filtersState.maxPrice || "";
+  document.getElementById("bedrooms").value = filtersState.bedrooms || "";
+  document.getElementById("bathrooms").value = filtersState.bathrooms || "";
+
+  const city = document.getElementById("city");
+  const type = document.getElementById("propertyType");
+
+  if(city) city.value = filtersState.city || "";
+  if(type) type.value = filtersState.propertyType || "";
+}
+
+
+
+
+// ====================================
+// PAGINATION
+// ====================================
+function renderPagination(){
+
+  const container = document.getElementById("pagination");
+
+  container.innerHTML = "";
+
+  if(currentPage > 1){
+    container.innerHTML += `
+      <button onclick="getProperties(${currentPage - 1})">←</button>
+    `;
+  }
+
+  let start = Math.max(1, currentPage - 4);
+  let end = Math.min(totalPages, start + 9);
+
+  for(let i = start; i <= end; i++){
+    container.innerHTML += `
+      <button class="${i === currentPage ? 'active' : ''}"
+        onclick="getProperties(${i})">
+        ${i}
+      </button>
+    `;
+  }
+
+  if(currentPage < totalPages){
+    container.innerHTML += `
+      <button onclick="getProperties(${currentPage + 1})">→</button>
+    `;
+  }
+
+}
+
+
+// ====================================
+// DETAILS
+// ====================================
+function goToDetails(id){
+
+  localStorage.setItem("property_id", id);
+
+  window.location.href = "property-details.html";
+
+}
+
+
+// ====================================
+// IMAGE FIX
+// ====================================
+function fixImage(imgString){
+
+  if(!imgString){
+    return "https://placehold.co/600x400?text=No+Image";
+  }
+
+  try{
+
+    let cleaned = imgString
+      .toString()
+      .replace("[","")
+      .replace("]","")
+      .replaceAll('"',"")
+      .replaceAll("'","")
+      .trim();
+
+    let first = cleaned.split(",")[0].trim();
+
+    if(!first){
+      return "https://placehold.co/600x400?text=No+Image";
+    }
+
+    return first;
+
+  }
+
+  catch{
+    return "https://placehold.co/600x400?text=No+Image";
+  }
+
+}
+
+
+// ====================================
+// RENDER CARDS
+// ====================================
+function renderCards(){
+
+  const search = document
+    .getElementById("searchInput")
+    .value
+    .toLowerCase();
+  const propertyType = document
+    .getElementById("propertyType")
+    .value
+    .toLowerCase();
+  const minPrice = parseFloat(
+    document.getElementById("minPrice").value
+  ) || 0;
+
+  const maxPrice = parseFloat(
+    document.getElementById("maxPrice").value
+  ) || Infinity;
+
+  const bedrooms = parseInt(
+    document.getElementById("bedrooms").value
+  ) || 0;
+
+  const bathrooms = parseInt(
+    document.getElementById("bathrooms").value
+  ) || 0;
+
+
+  const filtered = properties.filter(p => {
+
+    const matchSearch =
+
+      !search ||
+
+      p.title?.toLowerCase().includes(search) ||
+
+      p.city?.toLowerCase().includes(search) ||
+
+      p.area?.toLowerCase().includes(search) ||
+
+      p.type_property?.toLowerCase().includes(search); // 🔥 NEW
+
+    const matchPrice =
+      p.price >= minPrice &&
+      p.price <= maxPrice;
+    const matchType =
+      !propertyType ||
+      p.property_type?.toLowerCase().includes(propertyType);
+    const matchBeds =
+      p.bedrooms >= bedrooms;
+
+    const matchBaths =
+      p.bathrooms >= bathrooms;
+
+    return (
+      matchSearch &&
+      matchType &&
+      matchPrice &&
+      matchBeds &&
+      matchBaths
+    );
+
+  });
+
+
+  const container = document.getElementById("propertiesContainer");
+  const empty = document.getElementById("emptyState");
+
+
+  if(!filtered.length){
+    container.innerHTML = "";
+    empty.classList.add("show");
+    return;
+  }
+
+  empty.classList.remove("show");
+
+
+  container.innerHTML = filtered.map(p => {
+
+    const image = fixImage(p.all_image_url);
+
+    return `
+      <div class="property-card"
+        onclick="goToDetails(${p.property_id})">
+
+        <button class="fav-btn"
+          onclick="
+            event.stopPropagation();
+            this.textContent =
+              this.textContent === '🤍' ? '❤️' : '🤍'
+          ">
+          🤍
+        </button>
+
+        <img
+          src="${image}"
+          alt="${p.title}"
+          loading="lazy"
+          decoding="async"
+          onerror="this.src='https://placehold.co/600x400?text=No+Image'"
+        >
+
+        <div class="property-info">
+
+          <span class="badge ${
+            p.offering_type === 'sale'
+              ? 'badge-sale'
+              : 'badge-rent'
+          }">
+            ${p.offering_type === 'sale'
+              ? 'For Sale'
+              : 'For Rent'}
+          </span>
+
+          <h3>${p.title || "Property"}</h3>
+
+          <div class="price">
+            ${Number(p.price || 0).toLocaleString()} EGP
+          </div>
+
+          <div class="location">
+
+            📍 ${p.area || "Unknown"}, ${p.city || "Egypt"}
+
+            <br><br>
+
+            Type: ${p.property_type || "N/A"}
+
+            <br><br>
+
+            🛏 ${p.bedrooms || 0} Beds
+            · 🚿 ${p.bathrooms || 0} Baths
+            · 📐 ${p.area_sqm || 0} m²
+
+          </div>
+
+          <div class="card-hint">
+            <span>View Details →</span>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  }).join("");
+
+}
+
+
+// ====================================
+// START
+// ====================================
+getProperties();
+
+</script>
+
+
+<script id="navProfileInit">
+(function(){
+  var t = localStorage.getItem('token');
+  if (!t) return;
+  fetch('http://127.0.0.1:8000/auth/me',{headers:{'Authorization':'Bearer '+t}})
+    .then(function(r){return r.ok?r.json():null})
+    .then(function(u){
+      if (!u) return;
+      var el = document.getElementById('navProfileIcon');
+      if (el) el.textContent = ((u.first_name||'?')[0]+(u.last_name||'?')[0]).toUpperCase();
+    }).catch(function(){});
+})();
+</script>
+<script>
+// ── PWA: service worker + install button ──────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW failed:', err));
+  });
+}
+
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) installBtn.style.display = 'inline-block';
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted' && installBtn) installBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+}
+
+window.addEventListener('appinstalled', () => { if (installBtn) installBtn.style.display = 'none'; });
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  if (installBtn) installBtn.style.display = 'none';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Recommendation Evaluation — PropertyHUB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f5;color:#1a1a1a;padding:20px}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-size:1.4rem;font-weight:500;margin-bottom:4px}
+.sub{font-size:13px;color:#888;margin-bottom:1.5rem}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #ddd;margin-bottom:1.5rem}
+.tab{font-size:13px;padding:8px 16px;border:none;background:transparent;color:#666;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500}
+.pane{display:none}.pane.on{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.5rem}
+.card{background:#fff;border-radius:10px;padding:14px;border:1px solid #eee}
+.card .lbl{font-size:12px;color:#888;margin-bottom:4px}
+.card .val{font-size:24px;font-weight:500}
+.card .sub-t{font-size:11px;color:#aaa;margin-top:2px}
+.bar-wrap{height:4px;background:#eee;border-radius:2px;margin-top:8px}
+.bar-fill{height:4px;border-radius:2px;transition:width .5s}
+.sec{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:#888;margin:1.5rem 0 .75rem;border-bottom:1px solid #eee;padding-bottom:6px}
+.strat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem}
+.sc{background:#fff;border-radius:10px;padding:12px;border:1px solid #eee;font-size:12px}
+.sc .name{font-weight:500;margin-bottom:2px}
+.sc .trig{color:#aaa;margin-bottom:8px}
+.sc .row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #f5f5f5}
+.sc .row:last-child{border:none}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.b-cold{background:#fef3c7;color:#92400e}
+.b-cont{background:#dbeafe;color:#1e40af}
+.b-hybr{background:#d1fae5;color:#065f46}
+.cfg-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:13px}
+.cfg-row label{color:#666;min-width:120px}
+.cfg-row input,.cfg-row select{flex:1;max-width:340px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none}
+.cfg-row input:focus,.cfg-row select:focus{border-color:#555}
+.btn-row{display:flex;gap:8px;margin:1rem 0}
+button{padding:8px 18px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;transition:.15s}
+button:hover{background:#f0f0f0}
+button.primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+button.primary:hover{background:#333}
+.log{background:#1a1a1a;color:#ccc;border-radius:10px;padding:14px;min-height:140px;max-height:280px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.6}
+.log .ok{color:#4ade80}.log .warn{color:#fbbf24}.log .err{color:#f87171}.log .hi{color:#fff;font-weight:600}
+.user-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:1rem}
+.uc{background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #eee;font-size:12px}
+.uc .uid{font-weight:500;margin-bottom:2px}
+.uc .ms{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.uc .m{color:#888}.uc .m span{color:#1a1a1a;font-weight:500}
+.def-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.def{background:#fff;border-radius:10px;padding:12px;border:1px solid #eee}
+.def h4{font-size:13px;font-weight:500;margin-bottom:4px}
+.def p{font-size:12px;color:#666}
+.def code{display:block;font-size:11px;color:#aaa;margin-top:6px;font-family:monospace}
+.formula{background:#1a1a1a;color:#ccc;border-radius:10px;padding:14px;font-family:monospace;font-size:12px;line-height:2}
+.weights{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.wc{background:#fff;border-radius:10px;padding:12px;border:1px solid #eee;text-align:center}
+.wc .w{font-size:22px;font-weight:500}.wc .wl{font-size:12px;color:#888;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Recommendation system evaluation</h1>
+  <p class="sub">PropertyHUB — live backend evaluation dashboard</p>
+
+  <div class="tabs">
+    <button class="tab on" onclick="go(0)">Overview</button>
+    <button class="tab" onclick="go(1)">Per-user</button>
+    <button class="tab" onclick="go(2)">Metrics guide</button>
+    <button class="tab" onclick="go(3)">Run test</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="pane on" id="p0">
+    <div class="cards">
+      <div class="card"><div class="lbl">Precision@K</div><div class="val" id="vp">—</div><div class="sub-t">relevant / K shown</div><div class="bar-wrap"><div class="bar-fill" id="bp" style="width:0;background:#3b82f6"></div></div></div>
+      <div class="card"><div class="lbl">Recall@K</div><div class="val" id="vr">—</div><div class="sub-t">of all relevant items</div><div class="bar-wrap"><div class="bar-fill" id="br" style="width:0;background:#10b981"></div></div></div>
+      <div class="card"><div class="lbl">NDCG@K</div><div class="val" id="vn">—</div><div class="sub-t">ranking quality</div><div class="bar-wrap"><div class="bar-fill" id="bn" style="width:0;background:#8b5cf6"></div></div></div>
+      <div class="card"><div class="lbl">MRR</div><div class="val" id="vm">—</div><div class="sub-t">first relevant rank</div><div class="bar-wrap"><div class="bar-fill" id="bm" style="width:0;background:#f59e0b"></div></div></div>
+      <div class="card"><div class="lbl">Diversity</div><div class="val" id="vd">—</div><div class="sub-t">city + type spread</div><div class="bar-wrap"><div class="bar-fill" id="bd" style="width:0;background:#ec4899"></div></div></div>
+      <div class="card"><div class="lbl">Coverage</div><div class="val" id="vc">—</div><div class="sub-t">unique IDs / 26k</div><div class="bar-wrap"><div class="bar-fill" id="bc" style="width:0;background:#14b8a6"></div></div></div>
+    </div>
+
+    <div class="sec">Strategy breakdown</div>
+    <div class="strat-grid">
+      <div class="sc">
+        <div class="name"><span class="badge b-cold">cold_start</span></div>
+        <div class="trig">0 interactions</div>
+        <div class="row"><span>Users</span><span id="sc-u">—</span></div>
+        <div class="row"><span>Precision</span><span id="sc-p">—</span></div>
+        <div class="row"><span>NDCG</span><span id="sc-n">—</span></div>
+        <div class="row"><span>Diversity</span><span id="sc-d">—</span></div>
+      </div>
+      <div class="sc">
+        <div class="name"><span class="badge b-cont">content_only</span></div>
+        <div class="trig">1 – 4 interactions</div>
+        <div class="row"><span>Users</span><span id="so-u">—</span></div>
+        <div class="row"><span>Precision</span><span id="so-p">—</span></div>
+        <div class="row"><span>NDCG</span><span id="so-n">—</span></div>
+        <div class="row"><span>Diversity</span><span id="so-d">—</span></div>
+      </div>
+      <div class="sc">
+        <div class="name"><span class="badge b-hybr">full_hybrid</span></div>
+        <div class="trig">5+ interactions</div>
+        <div class="row"><span>Users</span><span id="sh-u">—</span></div>
+        <div class="row"><span>Precision</span><span id="sh-p">—</span></div>
+        <div class="row"><span>NDCG</span><span id="sh-n">—</span></div>
+        <div class="row"><span>Diversity</span><span id="sh-d">—</span></div>
+      </div>
+    </div>
+
+    <div class="sec">Score distribution</div>
+    <div style="position:relative;width:100%;height:240px">
+      <canvas id="chart-main" role="img" aria-label="Bar chart comparing precision recall NDCG MRR and diversity scores">Run evaluation to populate.</canvas>
+    </div>
+  </div>
+
+  <!-- PER USER -->
+  <div class="pane" id="p1">
+    <div class="sec">Per-user results</div>
+    <div class="user-grid" id="user-grid">
+      <p style="font-size:13px;color:#888">Run evaluation to see per-user breakdown.</p>
+    </div>
+    <div class="sec" style="margin-top:1.5rem">Strategy comparison chart</div>
+    <div style="position:relative;width:100%;height:220px">
+      <canvas id="chart-strat" role="img" aria-label="Grouped bar chart comparing precision NDCG and diversity per strategy">Run evaluation to populate.</canvas>
+    </div>
+  </div>
+
+  <!-- METRICS GUIDE -->
+  <div class="pane" id="p2">
+    <div class="sec">Metric definitions</div>
+    <div class="def-grid">
+      <div class="def"><h4>Precision@K</h4><p>From K items shown, how many are relevant. 7/10 = 0.70.</p><code>#relevant in top-K / K</code></div>
+      <div class="def"><h4>Recall@K</h4><p>Of all items user would like, how many appear in top-K.</p><code>#relevant in top-K / total relevant</code></div>
+      <div class="def"><h4>NDCG@K</h4><p>Order-aware precision — relevant item at rank 1 scores more than rank 9.</p><code>DCG / ideal DCG</code></div>
+      <div class="def"><h4>MRR</h4><p>Average 1/rank of the first relevant item. High = relevant appears early.</p><code>avg(1 / rank_first_relevant)</code></div>
+      <div class="def"><h4>Diversity</h4><p>Fraction of unique cities + types in results. Prevents filter bubble.</p><code>(unique_cities + unique_types) / 2K</code></div>
+      <div class="def"><h4>Coverage</h4><p>Unique IDs recommended across all users / total catalog (~26k).</p><code>#unique_ids / 26000</code></div>
+    </div>
+
+    <div class="sec">Full hybrid scoring formula</div>
+    <div class="formula">
+final_score = 0.4 × similarity<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.6 × rank_score<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.15 × recent_city_match<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.10 × session_recency<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;− 0.02 × diversity_penalty
+    </div>
+
+    <div class="sec">Action weights (UserVectorBuilder)</div>
+    <div class="weights">
+      <div class="wc"><div class="w">×1</div><div class="wl">view</div></div>
+      <div class="wc"><div class="w">×2</div><div class="wl">click</div></div>
+      <div class="wc"><div class="w">×5</div><div class="wl">favorite</div></div>
+      <div class="wc"><div class="w">×10</div><div class="wl">contact</div></div>
+    </div>
+  </div>
+
+  <!-- RUN TEST -->
+  <div class="pane" id="p3">
+    <div class="sec">Configuration</div>
+    <div class="cfg-row"><label>Backend URL</label><input id="cfg-url" value="http://127.0.0.1:8000"></div>
+    <div class="cfg-row"><label>Token (JWT)</label><input id="cfg-tok" placeholder="paste token or leave blank to auto-read"></div>
+    <div class="cfg-row"><label>User IDs</label><input id="cfg-uids" value="1,2,3,5,10,15,20,25,30,50"></div>
+    <div class="cfg-row">
+      <label>Top-N</label>
+      <input type="range" min="5" max="20" value="10" id="cfg-k" step="1" style="width:120px;max-width:120px">
+      <span id="cfg-kv" style="font-size:13px;min-width:20px">10</span>
+    </div>
+    <div class="cfg-row">
+      <label>Relevance proxy</label>
+      <select id="cfg-proxy">
+        <option value="top40">Top 40% = relevant</option>
+        <option value="top60">Top 60% = relevant</option>
+        <option value="all">All results = relevant</option>
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" onclick="runEval()">Run full evaluation</button>
+      <button onclick="runSingle()">Test first user only</button>
+      <button onclick="clearLog()">Clear log</button>
+    </div>
+    <div class="log" id="log"><span style="color:#666">Output will appear here…</span></div>
+  </div>
+</div>
+
+<script>
+let tabs  = document.querySelectorAll('.tab');
+let panes = document.querySelectorAll('.pane');
+let chartMain = null, chartStrat = null;
+
+function go(i) {
+  tabs.forEach((t,j)  => t.classList.toggle('on', i===j));
+  panes.forEach((p,j) => p.classList.toggle('on', i===j));
+}
+
+document.getElementById('cfg-k').oninput = function() {
+  document.getElementById('cfg-kv').textContent = this.value;
+};
+
+function hdr() {
+  const tok = document.getElementById('cfg-tok').value.trim() || localStorage.getItem('token') || '';
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok };
+}
+function base() { return document.getElementById('cfg-url').value.trim(); }
+
+function log(msg, cls) {
+  const box = document.getElementById('log');
+  const s   = document.createElement('div');
+  if (cls) s.className = cls;
+  s.textContent = msg;
+  box.appendChild(s);
+  box.scrollTop = box.scrollHeight;
+}
+function clearLog() { document.getElementById('log').innerHTML = ''; }
+
+function ndcg(ids, rel, k) {
+  let dcg=0, idcg=0;
+  for (let i=0; i<Math.min(k,ids.length); i++)
+    if (rel.has(String(ids[i]))) dcg += 1/Math.log2(i+2);
+  for (let i=0; i<Math.min(k,rel.size); i++) idcg += 1/Math.log2(i+2);
+  return idcg > 0 ? dcg/idcg : 0;
+}
+function mrr(ids, rel) {
+  for (let i=0; i<ids.length; i++) if (rel.has(String(ids[i]))) return 1/(i+1);
+  return 0;
+}
+function diversity(results) {
+  if (!results.length) return 0;
+  const uc = new Set(results.map(r=>r.city||'')).size;
+  const ut = new Set(results.map(r=>r.property_type||'')).size;
+  return ((uc/results.length)+(ut/results.length))/2;
+}
+function relSet(results, proxy) {
+  const ids = results.map(r=>String(r.property_id));
+  if (proxy==='all') return new Set(ids);
+  const cut = proxy==='top60' ? Math.ceil(ids.length*.6) : Math.ceil(ids.length*.4);
+  return new Set(ids.slice(0,cut));
+}
+function badge(s) {
+  return s==='full_hybrid'?'b-hybr':s==='content_only'?'b-cont':'b-cold';
+}
+
+async function fetchUser(uid, topN) {
+  const res = await fetch(base()+'/ml/recommend?top_n='+topN, { headers: hdr() });
+  if (!res.ok) throw new Error('HTTP '+res.status);
+  return res.json();
+}
+
+async function runSingle() {
+  const uid  = document.getElementById('cfg-uids').value.split(',')[0].trim();
+  const topN = parseInt(document.getElementById('cfg-k').value);
+  clearLog();
+  log('Testing user '+uid+' …', 'hi');
+  try {
+    const data     = await fetchUser(uid, topN);
+    const strategy = data.strategy || data.type || 'unknown';
+    const results  = data.results  || [];
+    const intCount = data.interaction_count ?? '?';
+    log('Strategy: '+strategy+' (interactions: '+intCount+')', strategy==='full_hybrid'?'ok':'');
+    log('Results count: '+results.length);
+    if (results.length) {
+      const cities = [...new Set(results.map(r=>r.city).filter(Boolean))];
+      const types  = [...new Set(results.map(r=>r.property_type).filter(Boolean))];
+      const div    = diversity(results);
+      log('Cities: '+cities.slice(0,5).join(', ')+(cities.length>5?'…':''));
+      log('Types:  '+types.slice(0,4).join(', '));
+      log('Diversity: '+div.toFixed(3), div>0.5?'ok':'warn');
+      results.slice(0,5).forEach((r,i)=>{
+        const price = r.price ? Number(r.price).toLocaleString()+' EGP' : '?';
+        log('  #'+(i+1)+' ['+r.property_id+'] '+(r.title||'N/A')+' — '+(r.city||'?')+' — '+price);
+      });
+    } else {
+      log('No results returned', 'warn');
+    }
+  } catch(e) { log('Error: '+e.message, 'err'); }
+}
+
+async function runEval() {
+  const uids  = document.getElementById('cfg-uids').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const topN  = parseInt(document.getElementById('cfg-k').value);
+  const proxy = document.getElementById('cfg-proxy').value;
+  clearLog();
+  log('Starting evaluation — '+uids.length+' users, top_n='+topN, 'hi');
+
+  const allRows = [];
+  const seenIds = new Set();
+  const sm = { cold_start:[], content_only:[], full_hybrid:[] };
+
+  for (const uid of uids) {
+    log('→ user '+uid+'…');
+    try {
+      const data     = await fetchUser(uid, topN);
+      const strategy = data.strategy || data.type || 'unknown';
+      const results  = data.results  || [];
+      const intCount = data.interaction_count ?? 0;
+
+      results.forEach(r => seenIds.add(r.property_id));
+
+      const rel = relSet(results, proxy);
+      const ids = results.map(r=>String(r.property_id));
+      const p   = rel.size / topN;
+      const r   = rel.size / Math.max(rel.size, 1);
+      const n   = ndcg(ids, rel, topN);
+      const m   = mrr(ids, rel);
+      const d   = diversity(results);
+
+      const row = {uid, strategy, intCount, p, r, n, m, d};
+      allRows.push(row);
+      if (sm[strategy]) sm[strategy].push(row);
+
+      log('  '+strategy+' | P@'+topN+':'+p.toFixed(2)+' NDCG:'+n.toFixed(2)+' MRR:'+m.toFixed(2)+' Div:'+d.toFixed(2),
+        strategy==='full_hybrid'?'ok':strategy==='cold_start'?'warn':'');
+    } catch(e) { log('  Error: '+e.message, 'err'); }
+  }
+
+  if (!allRows.length) { log('No results to aggregate', 'err'); return; }
+
+  const avg = k => allRows.reduce((s,r)=>s+r[k],0)/allRows.length;
+  const aP=avg('p'), aR=avg('r'), aN=avg('n'), aM=avg('m'), aD=avg('d');
+  const cov = seenIds.size/26000;
+
+  log('', 'hi');
+  log('=== Aggregated ('+allRows.length+' users) ===', 'hi');
+  log('Precision@'+topN+': '+aP.toFixed(3));
+  log('Recall@'+topN+':    '+aR.toFixed(3));
+  log('NDCG@'+topN+':      '+aN.toFixed(3));
+  log('MRR:              '+aM.toFixed(3));
+  log('Diversity:        '+aD.toFixed(3));
+  log('Coverage:         '+cov.toFixed(4)+' ('+seenIds.size+' unique IDs)');
+  log('Strategy — cold:'+sm.cold_start.length+' content:'+sm.content_only.length+' hybrid:'+sm.full_hybrid.length);
+
+  setCard('vp','bp',aP); setCard('vr','br',aR); setCard('vn','bn',aN);
+  setCard('vm','bm',aM); setCard('vd','bd',aD); setCard('vc','bc',cov);
+
+  fillStrat('sc',sm.cold_start);
+  fillStrat('so',sm.content_only);
+  fillStrat('sh',sm.full_hybrid);
+
+  drawMain(aP, aR, aN, aM, aD);
+  drawStrat(sm);
+  drawUsers(allRows);
+  go(0);
+}
+
+function setCard(vid, bid, val) {
+  document.getElementById(vid).textContent = val.toFixed(2);
+  document.getElementById(bid).style.width = Math.round(val*100)+'%';
+}
+
+function fillStrat(prefix, rows) {
+  document.getElementById(prefix+'-u').textContent = rows.length;
+  if (!rows.length) return;
+  const avg = k => rows.reduce((s,r)=>s+r[k],0)/rows.length;
+  document.getElementById(prefix+'-p').textContent = avg('p').toFixed(2);
+  document.getElementById(prefix+'-n').textContent = avg('n').toFixed(2);
+  document.getElementById(prefix+'-d').textContent = avg('d').toFixed(2);
+}
+
+function drawMain(p, r, n, m, d) {
+  const ctx = document.getElementById('chart-main');
+  if (chartMain) chartMain.destroy();
+  chartMain = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Precision','Recall','NDCG','MRR','Diversity'],
+      datasets: [{
+        label: 'Score',
+        data: [+p.toFixed(3),+r.toFixed(3),+n.toFixed(3),+m.toFixed(3),+d.toFixed(3)],
+        backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ec4899'],
+        borderRadius: 5, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        y:{ min:0, max:1, ticks:{ stepSize:.2, callback:v=>v.toFixed(1) }, grid:{ color:'rgba(0,0,0,0.05)' } },
+        x:{ grid:{ display:false } }
+      }
+    }
+  });
+}
+
+function drawStrat(sm) {
+  const ctx = document.getElementById('chart-strat');
+  if (chartStrat) chartStrat.destroy();
+  const avgK = (rows, k) => rows.length ? rows.reduce((s,r)=>s+r[k],0)/rows.length : 0;
+  const strats = ['cold_start','content_only','full_hybrid'];
+  chartStrat = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['cold_start','content_only','full_hybrid'],
+      datasets: [
+        { label:'Precision', data: strats.map(s=>+avgK(sm[s],'p').toFixed(3)), backgroundColor:'#3b82f6', borderRadius:4, borderSkipped:false },
+        { label:'NDCG',      data: strats.map(s=>+avgK(sm[s],'n').toFixed(3)), backgroundColor:'#8b5cf6', borderRadius:4, borderSkipped:false },
+        { label:'Diversity', data: strats.map(s=>+avgK(sm[s],'d').toFixed(3)), backgroundColor:'#ec4899', borderRadius:4, borderSkipped:false },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ boxWidth:12, font:{ size:12 } } } },
+      scales:{
+        y:{ min:0, max:1, ticks:{ stepSize:.2 }, grid:{ color:'rgba(0,0,0,0.05)' } },
+        x:{ grid:{ display:false } }
+      }
+    }
+  });
+}
+
+function drawUsers(rows) {
+  document.getElementById('user-grid').innerHTML = rows.map(r=>`
+    <div class="uc">
+      <div class="uid">User ${r.uid}</div>
+      <div style="margin-bottom:6px"><span class="badge ${badge(r.strategy)}">${r.strategy}</span></div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:6px">${r.intCount} interactions</div>
+      <div class="ms">
+        <span class="m">P <span>${r.p.toFixed(2)}</span></span>
+        <span class="m">N <span>${r.n.toFixed(2)}</span></span>
+        <span class="m">MRR <span>${r.m.toFixed(2)}</span></span>
+        <span class="m">Div <span>${r.d.toFixed(2)}</span></span>
+      </div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+DB_URL = "mysql+mysqlconnector://root:1234@localhost/real_estate_db"
